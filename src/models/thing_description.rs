@@ -152,7 +152,10 @@ mod tests {
     use crate::{
         data_structures::{array::ArrayEntry, map::MapEntry},
         models::{
-            action::Action, data_schema::DataSchema, link::Link, property::Property,
+            action::Action,
+            data_schema::{DataSchema, DataType},
+            link::Link,
+            property::Property,
             thing_description::ThingDescriptionBuilder,
         },
     };
@@ -215,7 +218,7 @@ mod tests {
                     read_only: None,
                     write_only: None,
                     format: None,
-                    data_type: None,
+                    data_type: Some(DataType::Boolean),
                 },
             },
         );
@@ -231,7 +234,7 @@ mod tests {
             .links(links)
             .build();
 
-        let expected_result = r#"{"@context":"https://www.w3.org/2022/wot/td/v1.1","@type":["saref:LightSwitch"],"title":"Test TD","properties":{"status":{"title":"Status"}},"actions":{"toggle":{"input":{"title":"Toggle Data"}},"toggle2":{}},"links":[{"href":"https://example.org"}]}"#;
+        let expected_result = r#"{"@context":"https://www.w3.org/2022/wot/td/v1.1","@type":["saref:LightSwitch"],"title":"Test TD","properties":{"status":{"title":"Status","type":"boolean"}},"actions":{"toggle":{"input":{"title":"Toggle Data"}},"toggle2":{}},"links":[{"href":"https://example.org"}]}"#;
         let actual_result: String<300> = to_string(&thing_description)?;
 
         assert_eq!(expected_result, actual_result.as_str());

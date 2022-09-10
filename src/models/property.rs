@@ -30,6 +30,9 @@ impl<'a> Serialize for Property<'a> {
         if data_schema.title.is_some() {
             map.serialize_entry("title", data_schema.title.unwrap())?;
         }
+        if data_schema.data_type.is_some() {
+            map.serialize_entry("type", &data_schema.data_type)?;
+        }
 
         map.end()
     }
