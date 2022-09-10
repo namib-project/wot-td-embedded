@@ -101,6 +101,13 @@ impl<'a> ThingDescriptionBuilder<'a> {
         self.base = Some(base);
         self
     }
+    pub fn properties(
+        mut self,
+        properties: MapEntry<'a, Property<'a>>,
+    ) -> ThingDescriptionBuilder<'a> {
+        self.properties = Some(properties);
+        self
+    }
 
     pub fn actions(mut self, actions: MapEntry<'a, Action<'a>>) -> ThingDescriptionBuilder<'a> {
         self.actions = Some(actions);
@@ -145,7 +152,7 @@ mod tests {
     use crate::{
         data_structures::{array::ArrayEntry, map::MapEntry},
         models::{
-            action::Action, data_schema::DataSchema, link::Link,
+            action::Action, data_schema::DataSchema, link::Link, property::Property,
             thing_description::ThingDescriptionBuilder,
         },
     };
@@ -190,17 +197,41 @@ mod tests {
         );
         actions.add_entry(&mut second_action);
 
+        let properties = MapEntry::new(
+            "status",
+            Property {
+                observable: None,
+                data_schema: DataSchema {
+                    json_ld_type: None,
+                    title: Some("Status"),
+                    titles: None,
+                    description: None,
+                    descriptions: None,
+                    constant: None,
+                    default: None,
+                    unit: None,
+                    one_of: None,
+                    enumeration: None,
+                    read_only: None,
+                    write_only: None,
+                    format: None,
+                    data_type: None,
+                },
+            },
+        );
+
         let links = ArrayEntry::new(Link {
             href: "https://example.org",
         });
 
         let thing_description = ThingDescriptionBuilder::new("Test TD")
             .json_ld_type(ArrayEntry::new("saref:LightSwitch"))
+            .properties(properties)
             .actions(actions)
             .links(links)
             .build();
 
-        let expected_result = r#"{"@context":"https://www.w3.org/2022/wot/td/v1.1","@type":["saref:LightSwitch"],"title":"Test TD","actions":{"toggle":{"input":{"title":"Toggle Data"}},"toggle2":{}},"links":[{"href":"https://example.org"}]}"#;
+        let expected_result = r#"{"@context":"https://www.w3.org/2022/wot/td/v1.1","@type":["saref:LightSwitch"],"title":"Test TD","properties":{"status":{"title":"Status"}},"actions":{"toggle":{"input":{"title":"Toggle Data"}},"toggle2":{}},"links":[{"href":"https://example.org"}]}"#;
         let actual_result: String<300> = to_string(&thing_description)?;
 
         assert_eq!(expected_result, actual_result.as_str());
