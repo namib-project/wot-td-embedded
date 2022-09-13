@@ -33,9 +33,10 @@ pub struct LinkBuilder<'a, const HREF_LANG: usize = 0> {
 
 impl<'a, const HREF_LANG: usize> LinkBuilder<'a, HREF_LANG> {
     pub fn new(href: &'a str) -> LinkBuilder<'a, HREF_LANG> {
-        let mut link_builder = LinkBuilder::default();
-        link_builder.href = href;
-        link_builder
+        LinkBuilder {
+            href,
+            ..Default::default()
+        }
     }
 
     pub fn href(&mut self, href: &'a str) -> &LinkBuilder<'a, HREF_LANG> {
