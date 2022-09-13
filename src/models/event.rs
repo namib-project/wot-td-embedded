@@ -9,7 +9,6 @@ use super::data_schema::DataSchema;
 pub struct Event<'a> {
     pub subscription: Option<DataSchema<'a>>,
     pub data: Option<DataSchema<'a>>,
-    #[serde(rename = "dataResponse")]
     pub data_response: Option<DataSchema<'a>>,
     pub cancellation: Option<DataSchema<'a>>,
 }

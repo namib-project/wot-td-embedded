@@ -58,6 +58,31 @@ pub struct ThingDescription<
     // TODO: Add uriVariables
 }
 
+impl<
+        'a,
+        const ACTIONS: usize,
+        const PROPERTIES: usize,
+        const EVENTS: usize,
+        const TITLES: usize,
+        const DESCRIPTIONS: usize,
+        const JSON_LD_TYPE: usize,
+        const LINKS: usize,
+    > ThingDescription<'a, ACTIONS, PROPERTIES, EVENTS, TITLES, DESCRIPTIONS, JSON_LD_TYPE, LINKS>
+{
+    pub fn builder() -> ThingDescriptionBuilder<
+        'a,
+        ACTIONS,
+        PROPERTIES,
+        EVENTS,
+        TITLES,
+        DESCRIPTIONS,
+        JSON_LD_TYPE,
+        LINKS,
+    > {
+        ThingDescriptionBuilder::default()
+    }
+}
+
 #[derive(Default)]
 pub struct ThingDescriptionBuilder<
     'a,
@@ -144,6 +169,22 @@ impl<
             links: None,
         }
     }
+    pub fn title(
+        mut self,
+        title: &'a str,
+    ) -> ThingDescriptionBuilder<
+        'a,
+        ACTIONS,
+        PROPERTIES,
+        EVENTS,
+        TITLES,
+        DESCRIPTIONS,
+        JSON_LD_TYPE,
+        LINKS,
+    > {
+        self.title = title;
+        self
+    }
 
     pub fn base(
         mut self,
@@ -161,6 +202,7 @@ impl<
         self.base = Some(base);
         self
     }
+
     pub fn properties(
         mut self,
         properties: FnvIndexMap<&'a str, Property<'a>, PROPERTIES>,
@@ -275,10 +317,11 @@ mod tests {
 
     use crate::models::{
         action::Action,
+        common::CommonFields,
         data_schema::{DataSchema, DataType},
         link::Link,
         property::Property,
-        thing_description::ThingDescriptionBuilder,
+        thing_description::ThingDescription,
     };
     use heapless::{FnvIndexMap, Vec};
     use serde_json_core::{heapless::String, ser::Error, to_string};
@@ -293,10 +336,7 @@ mod tests {
             observable: None,
             data_schema: DataSchema {
                 json_ld_type: None,
-                title: Some("Status"),
-                titles: None,
-                description: None,
-                descriptions: None,
+                common_fields: Some(CommonFields::builder().title("Status").build()),
                 constant: None,
                 default: None,
                 unit: None,
@@ -316,10 +356,7 @@ mod tests {
         let first_action = Action {
             input: Some(DataSchema {
                 json_ld_type: None,
-                title: Some("Toggle Data"),
-                titles: None,
-                description: None,
-                descriptions: None,
+                common_fields: Some(CommonFields::builder().title("Toggle Data").build()),
                 constant: None,
                 default: None,
                 unit: None,
@@ -350,9 +387,7 @@ mod tests {
 
         let mut links = Vec::<Link, LINKS_LENGTH>::new();
         links
-            .push(Link {
-                href: "https://example.org",
-            })
+            .push(Link::builder().href("https://example.org").build())
             .unwrap();
 
         const JSON_LD_TYPE_LENGTH: usize = 2;
@@ -361,14 +396,13 @@ mod tests {
         json_ld_type.push("saref:LightSwitch").unwrap();
 
         let thing_description =
-            ThingDescriptionBuilder::<2, 2, 0, 0, 0, JSON_LD_TYPE_LENGTH, LINKS_LENGTH>::new(
-                "Test TD",
-            )
-            .json_ld_type(json_ld_type)
-            .properties(properties)
-            .actions(actions)
-            .links(links)
-            .build();
+            ThingDescription::<2, 2, 0, 0, 0, JSON_LD_TYPE_LENGTH, LINKS_LENGTH>::builder()
+                .title("Test TD")
+                .json_ld_type(json_ld_type)
+                .properties(properties)
+                .actions(actions)
+                .links(links)
+                .build();
 
         let expected_result = r#"{"@context":"https://www.w3.org/2022/wot/td/v1.1","@type":["saref:LightSwitch"],"title":"Test TD","properties":{"status":{"title":"Status","type":"boolean"}},"actions":{"toggle":{"input":{"title":"Toggle Data"}},"toggle2":{}},"links":[{"href":"https://example.org"}]}"#;
         let actual_result: String<300> = to_string(&thing_description)?;

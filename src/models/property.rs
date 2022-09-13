@@ -4,7 +4,6 @@ use super::data_schema::DataSchema;
 
 #[derive(Debug)]
 pub struct Property<'a> {
-    // TODO: Deal with nested serialization
     pub data_schema: DataSchema<'a>,
     pub observable: Option<bool>,
 }
@@ -23,17 +22,6 @@ impl<'a> Serialize for Property<'a> {
             )?;
         }
 
-        // TODO: Add complete dataschema serialization
-
-        let data_schema = &self.data_schema;
-
-        if data_schema.title.is_some() {
-            map.serialize_entry("title", data_schema.title.unwrap())?;
-        }
-        if data_schema.data_type.is_some() {
-            map.serialize_entry("type", &data_schema.data_type)?;
-        }
-
-        map.end()
+        self.data_schema.serialize_to_map::<S>(map)?.end()
     }
 }
