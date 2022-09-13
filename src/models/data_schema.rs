@@ -1,3 +1,4 @@
+use heapless::FnvIndexMap;
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 
@@ -6,13 +7,13 @@ use crate::data_structures::{array::ArrayEntry, map::MapEntry};
 #[skip_serializing_none]
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct DataSchema<'a> {
+pub struct DataSchema<'a, const TITLES: usize = 0, const DESCRIPTIONS: usize = 0> {
     #[serde(rename = "@type")]
     pub json_ld_type: Option<ArrayEntry<'a, &'a str>>,
     pub title: Option<&'a str>,
-    pub titles: Option<MapEntry<'a, &'a str>>,
+    pub titles: Option<FnvIndexMap<&'a str, &'a str, TITLES>>,
     pub description: Option<&'a str>,
-    pub descriptions: Option<MapEntry<'a, &'a str>>,
+    pub descriptions: Option<FnvIndexMap<&'a str, &'a str, DESCRIPTIONS>>,
     #[serde(rename = "const")]
     pub constant: Option<DataStructure<'a>>,
     pub default: Option<DataStructure<'a>>,

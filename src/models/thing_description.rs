@@ -1,3 +1,4 @@
+use heapless::FnvIndexMap;
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 
@@ -23,7 +24,12 @@ impl<'a> Default for ContextEntry<'a> {
 #[skip_serializing_none]
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct ThingDescription<'a> {
+pub struct ThingDescription<
+    'a,
+    const ACTIONS: usize = 0,
+    const PROPERTIES: usize = 0,
+    const EVENTS: usize = 0,
+> {
     #[serde(rename = "@context")]
     pub context: ContextEntry<'a>,
     #[serde(rename = "@type")]
@@ -38,9 +44,9 @@ pub struct ThingDescription<'a> {
     pub modified: Option<&'a str>,
     pub support: Option<&'a str>,
     pub base: Option<&'a str>,
-    pub properties: Option<MapEntry<'a, Property<'a>>>,
-    pub actions: Option<MapEntry<'a, Action<'a>>>,
-    pub events: Option<MapEntry<'a, Event<'a>>>,
+    pub properties: Option<FnvIndexMap<&'a str, Property<'a>, PROPERTIES>>,
+    pub actions: Option<FnvIndexMap<&'a str, Action<'a>, ACTIONS>>,
+    pub events: Option<FnvIndexMap<&'a str, Event<'a>, EVENTS>>,
     pub links: Option<ArrayEntry<'a, Link<'a>>>,
     // TODO: Add forms
     // TODO: Add security
@@ -51,7 +57,12 @@ pub struct ThingDescription<'a> {
 }
 
 #[derive(Default)]
-pub struct ThingDescriptionBuilder<'a> {
+pub struct ThingDescriptionBuilder<
+    'a,
+    const ACTIONS: usize = 0,
+    const PROPERTIES: usize = 0,
+    const EVENTS: usize = 0,
+> {
     pub context: ContextEntry<'a>,
     pub json_ld_type: Option<ArrayEntry<'a, &'a str>>,
     pub id: Option<&'a str>,
@@ -64,9 +75,9 @@ pub struct ThingDescriptionBuilder<'a> {
     pub modified: Option<&'a str>,
     pub support: Option<&'a str>,
     pub base: Option<&'a str>,
-    pub properties: Option<MapEntry<'a, Property<'a>>>,
-    pub actions: Option<MapEntry<'a, Action<'a>>>,
-    pub events: Option<MapEntry<'a, Event<'a>>>,
+    pub properties: Option<FnvIndexMap<&'a str, Property<'a>, PROPERTIES>>,
+    pub actions: Option<FnvIndexMap<&'a str, Action<'a>, ACTIONS>>,
+    pub events: Option<FnvIndexMap<&'a str, Event<'a>, EVENTS>>,
     pub links: Option<ArrayEntry<'a, Link<'a>>>,
     // TODO: Add forms
     // TODO: Add security
@@ -76,8 +87,10 @@ pub struct ThingDescriptionBuilder<'a> {
     // TODO: Add uriVariables
 }
 
-impl<'a> ThingDescriptionBuilder<'a> {
-    pub fn new(title: &'a str) -> ThingDescriptionBuilder {
+impl<'a, const ACTIONS: usize, const PROPERTIES: usize, const EVENTS: usize>
+    ThingDescriptionBuilder<'a, ACTIONS, PROPERTIES, EVENTS>
+{
+    pub fn new(title: &'a str) -> ThingDescriptionBuilder<'a, ACTIONS, PROPERTIES> {
         ThingDescriptionBuilder {
             title,
             titles: None,
@@ -97,24 +110,41 @@ impl<'a> ThingDescriptionBuilder<'a> {
         }
     }
 
-    pub fn base(mut self, base: &'a str) -> ThingDescriptionBuilder {
+    pub fn base(
+        mut self,
+        base: &'a str,
+    ) -> ThingDescriptionBuilder<'a, ACTIONS, PROPERTIES, EVENTS> {
         self.base = Some(base);
         self
     }
     pub fn properties(
         mut self,
-        properties: MapEntry<'a, Property<'a>>,
-    ) -> ThingDescriptionBuilder<'a> {
+        properties: FnvIndexMap<&'a str, Property<'a>, PROPERTIES>,
+    ) -> ThingDescriptionBuilder<'a, ACTIONS, PROPERTIES, EVENTS> {
         self.properties = Some(properties);
         self
     }
 
-    pub fn actions(mut self, actions: MapEntry<'a, Action<'a>>) -> ThingDescriptionBuilder<'a> {
+    pub fn actions(
+        mut self,
+        actions: FnvIndexMap<&'a str, Action<'a>, ACTIONS>,
+    ) -> ThingDescriptionBuilder<'a, ACTIONS, PROPERTIES, EVENTS> {
         self.actions = Some(actions);
         self
     }
 
-    pub fn links(mut self, links: ArrayEntry<'a, Link<'a>>) -> ThingDescriptionBuilder<'a> {
+    pub fn events(
+        mut self,
+        events: FnvIndexMap<&'a str, Event<'a>, EVENTS>,
+    ) -> ThingDescriptionBuilder<'a, ACTIONS, PROPERTIES, EVENTS> {
+        self.events = Some(events);
+        self
+    }
+
+    pub fn links(
+        mut self,
+        links: ArrayEntry<'a, Link<'a>>,
+    ) -> ThingDescriptionBuilder<'a, ACTIONS, PROPERTIES, EVENTS> {
         self.links = Some(links);
         self
     }
@@ -122,12 +152,12 @@ impl<'a> ThingDescriptionBuilder<'a> {
     pub fn json_ld_type(
         mut self,
         json_ld_type: ArrayEntry<'a, &'a str>,
-    ) -> ThingDescriptionBuilder<'a> {
+    ) -> ThingDescriptionBuilder<'a, ACTIONS, PROPERTIES, EVENTS> {
         self.json_ld_type = Some(json_ld_type);
         self
     }
 
-    pub fn build(self) -> ThingDescription<'a> {
+    pub fn build(self) -> ThingDescription<'a, ACTIONS, PROPERTIES, EVENTS> {
         ThingDescription {
             context: self.context,
             json_ld_type: self.json_ld_type,
@@ -150,7 +180,7 @@ impl<'a> ThingDescriptionBuilder<'a> {
 mod tests {
 
     use crate::{
-        data_structures::{array::ArrayEntry, map::MapEntry},
+        data_structures::array::ArrayEntry,
         models::{
             action::Action,
             data_schema::{DataSchema, DataType},
@@ -159,75 +189,77 @@ mod tests {
             thing_description::ThingDescriptionBuilder,
         },
     };
+    use heapless::FnvIndexMap;
     use serde_json_core::{heapless::String, ser::Error, to_string};
 
     #[test]
     fn serialize_thing_description() -> Result<(), Error> {
-        let mut actions = MapEntry::new(
-            "toggle",
-            Action {
-                input: Some(DataSchema {
-                    json_ld_type: None,
-                    title: Some("Toggle Data"),
-                    titles: None,
-                    description: None,
-                    descriptions: None,
-                    constant: None,
-                    default: None,
-                    unit: None,
-                    one_of: None,
-                    enumeration: None,
-                    read_only: None,
-                    write_only: None,
-                    format: None,
-                    data_type: None,
-                }),
-                output: None,
-                safe: None,
-                idempotent: None,
-                synchronous: None,
-            },
-        );
-        let mut second_action = MapEntry::new(
-            "toggle2",
-            Action {
-                input: None,
-                output: None,
-                safe: None,
-                idempotent: None,
-                synchronous: None,
-            },
-        );
-        actions.add_entry(&mut second_action);
+        // FIXME: For some reason the size needs to be 2 here, otherwise an overflow occurs.
+        //        See https://github.com/japaric/heapless/issues/216
+        let mut properties = FnvIndexMap::<&str, Property, 2>::new();
 
-        let properties = MapEntry::new(
-            "status",
-            Property {
-                observable: None,
-                data_schema: DataSchema {
-                    json_ld_type: None,
-                    title: Some("Status"),
-                    titles: None,
-                    description: None,
-                    descriptions: None,
-                    constant: None,
-                    default: None,
-                    unit: None,
-                    one_of: None,
-                    enumeration: None,
-                    read_only: None,
-                    write_only: None,
-                    format: None,
-                    data_type: Some(DataType::Boolean),
-                },
+        let first_property = Property {
+            observable: None,
+            data_schema: DataSchema {
+                json_ld_type: None,
+                title: Some("Status"),
+                titles: None,
+                description: None,
+                descriptions: None,
+                constant: None,
+                default: None,
+                unit: None,
+                one_of: None,
+                enumeration: None,
+                read_only: None,
+                write_only: None,
+                format: None,
+                data_type: Some(DataType::Boolean),
             },
-        );
+        };
+
+        properties.insert("status", first_property).unwrap();
+
+        let mut actions = FnvIndexMap::<&str, Action, 2>::new();
+
+        let first_action = Action {
+            input: Some(DataSchema {
+                json_ld_type: None,
+                title: Some("Toggle Data"),
+                titles: None,
+                description: None,
+                descriptions: None,
+                constant: None,
+                default: None,
+                unit: None,
+                one_of: None,
+                enumeration: None,
+                read_only: None,
+                write_only: None,
+                format: None,
+                data_type: None,
+            }),
+            output: None,
+            safe: None,
+            idempotent: None,
+            synchronous: None,
+        };
+
+        let second_action = Action {
+            input: None,
+            output: None,
+            safe: None,
+            idempotent: None,
+            synchronous: None,
+        };
+        actions.insert("toggle", first_action).unwrap();
+        actions.insert("toggle2", second_action).unwrap();
 
         let links = ArrayEntry::new(Link {
             href: "https://example.org",
         });
 
-        let thing_description = ThingDescriptionBuilder::new("Test TD")
+        let thing_description = ThingDescriptionBuilder::<2, 2>::new("Test TD")
             .json_ld_type(ArrayEntry::new("saref:LightSwitch"))
             .properties(properties)
             .actions(actions)
