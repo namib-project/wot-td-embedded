@@ -522,11 +522,12 @@ impl<
 mod tests {
 
     use crate::models::{
-        action::Action,
+        action::{Action, ActionBuilder},
         common::CommonFields,
         data_schema::{DataSchema, DataType},
+        form::{Form, FormBuilder},
         link::Link,
-        property::Property,
+        property::{Property, PropertyBuilder},
         thing_description::ThingDescription,
     };
     use heapless::{FnvIndexMap, Vec};
@@ -534,58 +535,60 @@ mod tests {
 
     #[test]
     fn serialize_thing_description() -> Result<(), Error> {
+        let mut property_forms = Vec::<Form, 2>::new();
+        let property_form = FormBuilder::new("coaps://example.org/status").build();
+        property_forms.push(property_form).unwrap();
+
+        let property_data_schema = DataSchema {
+            json_ld_type: None,
+            common_fields: Some(CommonFields::builder().title("Status").build()),
+            constant: None,
+            default: None,
+            unit: None,
+            one_of: None,
+            enumeration: None,
+            read_only: None,
+            write_only: None,
+            format: None,
+            data_type: Some(DataType::Boolean),
+        };
+
         // FIXME: For some reason the size needs to be 2 here, otherwise an overflow occurs.
         //        See https://github.com/japaric/heapless/issues/216
         let mut properties = FnvIndexMap::<&str, Property, 2>::new();
 
-        let first_property = Property {
-            observable: None,
-            data_schema: DataSchema {
-                json_ld_type: None,
-                common_fields: Some(CommonFields::builder().title("Status").build()),
-                constant: None,
-                default: None,
-                unit: None,
-                one_of: None,
-                enumeration: None,
-                read_only: None,
-                write_only: None,
-                format: None,
-                data_type: Some(DataType::Boolean),
-            },
-        };
+        let first_property = PropertyBuilder::new(&property_forms, &property_data_schema).build();
 
         properties.insert("status", first_property).unwrap();
 
+        let mut first_action_forms = Vec::<Form, 2>::new();
+        let first_action_form = FormBuilder::new("coaps://example.org/toggle").build();
+        first_action_forms.push(first_action_form).unwrap();
+        let action_input = DataSchema {
+            json_ld_type: None,
+            common_fields: Some(CommonFields::builder().title("Toggle Data").build()),
+            constant: None,
+            default: None,
+            unit: None,
+            one_of: None,
+            enumeration: None,
+            read_only: None,
+            write_only: None,
+            format: None,
+            data_type: None,
+        };
+
+        let first_action = ActionBuilder::new(&first_action_forms)
+            .input(&action_input)
+            .build();
+
+        let mut second_action_forms = Vec::<Form, 2>::new();
+        let second_action_form = FormBuilder::new("coaps://example.org/toggle2").build();
+        second_action_forms.push(second_action_form).unwrap();
+
+        let second_action = ActionBuilder::new(&second_action_forms).build();
+
         let mut actions = FnvIndexMap::<&str, Action, 2>::new();
-
-        let first_action = Action {
-            input: Some(DataSchema {
-                json_ld_type: None,
-                common_fields: Some(CommonFields::builder().title("Toggle Data").build()),
-                constant: None,
-                default: None,
-                unit: None,
-                one_of: None,
-                enumeration: None,
-                read_only: None,
-                write_only: None,
-                format: None,
-                data_type: None,
-            }),
-            output: None,
-            safe: None,
-            idempotent: None,
-            synchronous: None,
-        };
-
-        let second_action = Action {
-            input: None,
-            output: None,
-            safe: None,
-            idempotent: None,
-            synchronous: None,
-        };
         actions.insert("toggle", first_action).unwrap();
         actions.insert("toggle2", second_action).unwrap();
 
@@ -610,8 +613,8 @@ mod tests {
                 .links(links)
                 .build();
 
-        let expected_result = r#"{"@context":["https://www.w3.org/2022/wot/td/v1.1"],"@type":["saref:LightSwitch"],"title":"Test TD","properties":{"status":{"title":"Status","type":"boolean"}},"actions":{"toggle":{"input":{"title":"Toggle Data"}},"toggle2":{}},"links":[{"href":"https://example.org"}]}"#;
-        let actual_result: String<300> = to_string(&thing_description)?;
+        let expected_result = r#"{"@context":["https://www.w3.org/2022/wot/td/v1.1"],"@type":["saref:LightSwitch"],"title":"Test TD","properties":{"status":{"forms":[{"href":"coaps://example.org/status"}],"title":"Status","type":"boolean"}},"actions":{"toggle":{"forms":[{"href":"coaps://example.org/toggle"}],"input":{"title":"Toggle Data"}},"toggle2":{"forms":[{"href":"coaps://example.org/toggle2"}]}},"links":[{"href":"https://example.org"}]}"#;
+        let actual_result: String<500> = to_string(&thing_description)?;
 
         assert_eq!(expected_result, actual_result.as_str());
         Ok(())
