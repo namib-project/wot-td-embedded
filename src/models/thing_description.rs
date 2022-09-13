@@ -2,7 +2,9 @@ use heapless::{FnvIndexMap, Vec};
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 
-use super::{action::Action, event::Event, link::Link, property::Property};
+use super::{
+    action::Action, data_schema::DataSchema, event::Event, link::Link, property::Property,
+};
 
 pub const WOT_TD_11_CONTEXT: &str = "https://www.w3.org/2022/wot/td/v1.1";
 
@@ -24,6 +26,7 @@ impl<'a> Default for ContextEntry<'a> {
 #[serde(rename_all = "camelCase")]
 pub struct ThingDescription<
     'a,
+    const CONTEXT: usize = 2,
     const ACTIONS: usize = 0,
     const PROPERTIES: usize = 0,
     const EVENTS: usize = 0,
@@ -31,9 +34,15 @@ pub struct ThingDescription<
     const DESCRIPTIONS: usize = 0,
     const JSON_LD_TYPE: usize = 0,
     const LINKS: usize = 0,
+    const FORMS: usize = 0,
+    const SECURITY: usize = 0,
+    const SECURITY_DEFINITIONS: usize = 0,
+    const PROFILE: usize = 0,
+    const SCHEMA_DEFINITIONS: usize = 0,
+    const URI_VARIABLES: usize = 0,
 > {
     #[serde(rename = "@context")]
-    pub context: ContextEntry<'a>,
+    pub context: Vec<ContextEntry<'a>, CONTEXT>,
     #[serde(rename = "@type")]
     pub json_ld_type: Option<Vec<&'a str, JSON_LD_TYPE>>,
     pub id: Option<&'a str>,
@@ -51,15 +60,16 @@ pub struct ThingDescription<
     pub events: Option<FnvIndexMap<&'a str, Event<'a>, EVENTS>>,
     pub links: Option<Vec<Link<'a>, LINKS>>,
     // TODO: Add forms
-    // TODO: Add security
+    pub security: Option<Vec<Link<'a>, SECURITY>>,
     // TODO: Add securityDefinitions
-    // TODO: Add profile
-    // TODO: Add schemaDefinitions
-    // TODO: Add uriVariables
+    pub profile: Option<Vec<Link<'a>, PROFILE>>,
+    pub schema_definitions: Option<FnvIndexMap<&'a str, DataSchema<'a>, SCHEMA_DEFINITIONS>>,
+    pub uri_variables: Option<FnvIndexMap<&'a str, DataSchema<'a>, URI_VARIABLES>>,
 }
 
 impl<
         'a,
+        const CONTEXT: usize,
         const ACTIONS: usize,
         const PROPERTIES: usize,
         const EVENTS: usize,
@@ -67,10 +77,16 @@ impl<
         const DESCRIPTIONS: usize,
         const JSON_LD_TYPE: usize,
         const LINKS: usize,
-    > ThingDescription<'a, ACTIONS, PROPERTIES, EVENTS, TITLES, DESCRIPTIONS, JSON_LD_TYPE, LINKS>
-{
-    pub fn builder() -> ThingDescriptionBuilder<
+        const FORMS: usize,
+        const SECURITY: usize,
+        const SECURITY_DEFINITIONS: usize,
+        const PROFILE: usize,
+        const SCHEMA_DEFINITIONS: usize,
+        const URI_VARIABLES: usize,
+    >
+    ThingDescription<
         'a,
+        CONTEXT,
         ACTIONS,
         PROPERTIES,
         EVENTS,
@@ -78,14 +94,39 @@ impl<
         DESCRIPTIONS,
         JSON_LD_TYPE,
         LINKS,
+        FORMS,
+        SECURITY,
+        SECURITY_DEFINITIONS,
+        PROFILE,
+        SCHEMA_DEFINITIONS,
+        URI_VARIABLES,
+    >
+{
+    pub fn builder() -> ThingDescriptionBuilder<
+        'a,
+        CONTEXT,
+        ACTIONS,
+        PROPERTIES,
+        EVENTS,
+        TITLES,
+        DESCRIPTIONS,
+        JSON_LD_TYPE,
+        LINKS,
+        FORMS,
+        SECURITY,
+        SECURITY_DEFINITIONS,
+        PROFILE,
+        SCHEMA_DEFINITIONS,
+        URI_VARIABLES,
     > {
         ThingDescriptionBuilder::default()
     }
 }
 
-#[derive(Default)]
+// #[derive(Default)]
 pub struct ThingDescriptionBuilder<
     'a,
+    const CONTEXT: usize = 2,
     const ACTIONS: usize = 0,
     const PROPERTIES: usize = 0,
     const EVENTS: usize = 0,
@@ -93,8 +134,14 @@ pub struct ThingDescriptionBuilder<
     const DESCRIPTIONS: usize = 0,
     const JSON_LD_TYPE: usize = 0,
     const LINKS: usize = 0,
+    const FORMS: usize = 0,
+    const SECURITY: usize = 0,
+    const SECURITY_DEFINITIONS: usize = 0,
+    const PROFILE: usize = 0,
+    const SCHEMA_DEFINITIONS: usize = 0,
+    const URI_VARIABLES: usize = 0,
 > {
-    pub context: ContextEntry<'a>,
+    pub context: Vec<ContextEntry<'a>, CONTEXT>,
     pub json_ld_type: Option<Vec<&'a str, JSON_LD_TYPE>>,
     pub id: Option<&'a str>,
     pub title: &'a str,
@@ -111,15 +158,16 @@ pub struct ThingDescriptionBuilder<
     pub events: Option<FnvIndexMap<&'a str, Event<'a>, EVENTS>>,
     pub links: Option<Vec<Link<'a>, LINKS>>,
     // TODO: Add forms
-    // TODO: Add security
+    pub security: Option<Vec<Link<'a>, SECURITY>>,
     // TODO: Add securityDefinitions
-    // TODO: Add profile
-    // TODO: Add schemaDefinitions
-    // TODO: Add uriVariables
+    pub profile: Option<Vec<Link<'a>, PROFILE>>,
+    pub schema_definitions: Option<FnvIndexMap<&'a str, DataSchema<'a>, SCHEMA_DEFINITIONS>>,
+    pub uri_variables: Option<FnvIndexMap<&'a str, DataSchema<'a>, URI_VARIABLES>>,
 }
 
 impl<
         'a,
+        const CONTEXT: usize,
         const ACTIONS: usize,
         const PROPERTIES: usize,
         const EVENTS: usize,
@@ -127,9 +175,16 @@ impl<
         const DESCRIPTIONS: usize,
         const JSON_LD_TYPE: usize,
         const LINKS: usize,
+        const FORMS: usize,
+        const SECURITY: usize,
+        const SECURITY_DEFINITIONS: usize,
+        const PROFILE: usize,
+        const SCHEMA_DEFINITIONS: usize,
+        const URI_VARIABLES: usize,
     >
     ThingDescriptionBuilder<
         'a,
+        CONTEXT,
         ACTIONS,
         PROPERTIES,
         EVENTS,
@@ -137,12 +192,82 @@ impl<
         DESCRIPTIONS,
         JSON_LD_TYPE,
         LINKS,
+        FORMS,
+        SECURITY,
+        SECURITY_DEFINITIONS,
+        PROFILE,
+        SCHEMA_DEFINITIONS,
+        URI_VARIABLES,
+    >
+{
+    fn default() -> Self {
+        let mut blah = Vec::<ContextEntry, CONTEXT>::new();
+        blah.push(ContextEntry::default()).unwrap();
+
+        Self {
+            context: blah,
+            json_ld_type: Default::default(),
+            id: Default::default(),
+            title: Default::default(),
+            titles: Default::default(),
+            description: Default::default(),
+            descriptions: Default::default(),
+            created: Default::default(),
+            modified: Default::default(),
+            support: Default::default(),
+            base: Default::default(),
+            properties: Default::default(),
+            actions: Default::default(),
+            events: Default::default(),
+            links: Default::default(),
+            security: Default::default(),
+            profile: Default::default(),
+            schema_definitions: Default::default(),
+            uri_variables: Default::default(),
+        }
+    }
+}
+
+impl<
+        'a,
+        const CONTEXT: usize,
+        const ACTIONS: usize,
+        const PROPERTIES: usize,
+        const EVENTS: usize,
+        const TITLES: usize,
+        const DESCRIPTIONS: usize,
+        const JSON_LD_TYPE: usize,
+        const LINKS: usize,
+        const FORMS: usize,
+        const SECURITY: usize,
+        const SECURITY_DEFINITIONS: usize,
+        const PROFILE: usize,
+        const SCHEMA_DEFINITIONS: usize,
+        const URI_VARIABLES: usize,
+    >
+    ThingDescriptionBuilder<
+        'a,
+        CONTEXT,
+        ACTIONS,
+        PROPERTIES,
+        EVENTS,
+        TITLES,
+        DESCRIPTIONS,
+        JSON_LD_TYPE,
+        LINKS,
+        FORMS,
+        SECURITY,
+        SECURITY_DEFINITIONS,
+        PROFILE,
+        SCHEMA_DEFINITIONS,
+        URI_VARIABLES,
     >
 {
     pub fn new(
         title: &'a str,
     ) -> ThingDescriptionBuilder<
         'a,
+        CONTEXT,
         ACTIONS,
         PROPERTIES,
         EVENTS,
@@ -150,11 +275,19 @@ impl<
         DESCRIPTIONS,
         JSON_LD_TYPE,
         LINKS,
+        FORMS,
+        SECURITY,
+        SECURITY_DEFINITIONS,
+        PROFILE,
+        SCHEMA_DEFINITIONS,
+        URI_VARIABLES,
     > {
+        let mut context = Vec::<ContextEntry, CONTEXT>::new();
+        context.push(ContextEntry::default()).unwrap();
         ThingDescriptionBuilder {
             title,
             titles: None,
-            context: ContextEntry::default(),
+            context,
             json_ld_type: None,
             id: None,
             description: None,
@@ -167,13 +300,19 @@ impl<
             actions: None,
             events: None,
             links: None,
+            security: None,
+            profile: None,
+            schema_definitions: None,
+            uri_variables: None,
         }
     }
+
     pub fn title(
         mut self,
         title: &'a str,
     ) -> ThingDescriptionBuilder<
         'a,
+        CONTEXT,
         ACTIONS,
         PROPERTIES,
         EVENTS,
@@ -181,6 +320,12 @@ impl<
         DESCRIPTIONS,
         JSON_LD_TYPE,
         LINKS,
+        FORMS,
+        SECURITY,
+        SECURITY_DEFINITIONS,
+        PROFILE,
+        SCHEMA_DEFINITIONS,
+        URI_VARIABLES,
     > {
         self.title = title;
         self
@@ -191,6 +336,7 @@ impl<
         base: &'a str,
     ) -> ThingDescriptionBuilder<
         'a,
+        CONTEXT,
         ACTIONS,
         PROPERTIES,
         EVENTS,
@@ -198,6 +344,12 @@ impl<
         DESCRIPTIONS,
         JSON_LD_TYPE,
         LINKS,
+        FORMS,
+        SECURITY,
+        SECURITY_DEFINITIONS,
+        PROFILE,
+        SCHEMA_DEFINITIONS,
+        URI_VARIABLES,
     > {
         self.base = Some(base);
         self
@@ -208,6 +360,7 @@ impl<
         properties: FnvIndexMap<&'a str, Property<'a>, PROPERTIES>,
     ) -> ThingDescriptionBuilder<
         'a,
+        CONTEXT,
         ACTIONS,
         PROPERTIES,
         EVENTS,
@@ -215,6 +368,12 @@ impl<
         DESCRIPTIONS,
         JSON_LD_TYPE,
         LINKS,
+        FORMS,
+        SECURITY,
+        SECURITY_DEFINITIONS,
+        PROFILE,
+        SCHEMA_DEFINITIONS,
+        URI_VARIABLES,
     > {
         self.properties = Some(properties);
         self
@@ -225,6 +384,7 @@ impl<
         actions: FnvIndexMap<&'a str, Action<'a>, ACTIONS>,
     ) -> ThingDescriptionBuilder<
         'a,
+        CONTEXT,
         ACTIONS,
         PROPERTIES,
         EVENTS,
@@ -232,6 +392,12 @@ impl<
         DESCRIPTIONS,
         JSON_LD_TYPE,
         LINKS,
+        FORMS,
+        SECURITY,
+        SECURITY_DEFINITIONS,
+        PROFILE,
+        SCHEMA_DEFINITIONS,
+        URI_VARIABLES,
     > {
         self.actions = Some(actions);
         self
@@ -242,6 +408,7 @@ impl<
         events: FnvIndexMap<&'a str, Event<'a>, EVENTS>,
     ) -> ThingDescriptionBuilder<
         'a,
+        CONTEXT,
         ACTIONS,
         PROPERTIES,
         EVENTS,
@@ -249,6 +416,12 @@ impl<
         DESCRIPTIONS,
         JSON_LD_TYPE,
         LINKS,
+        FORMS,
+        SECURITY,
+        SECURITY_DEFINITIONS,
+        PROFILE,
+        SCHEMA_DEFINITIONS,
+        URI_VARIABLES,
     > {
         self.events = Some(events);
         self
@@ -259,6 +432,7 @@ impl<
         links: Vec<Link<'a>, LINKS>,
     ) -> ThingDescriptionBuilder<
         'a,
+        CONTEXT,
         ACTIONS,
         PROPERTIES,
         EVENTS,
@@ -266,6 +440,12 @@ impl<
         DESCRIPTIONS,
         JSON_LD_TYPE,
         LINKS,
+        FORMS,
+        SECURITY,
+        SECURITY_DEFINITIONS,
+        PROFILE,
+        SCHEMA_DEFINITIONS,
+        URI_VARIABLES,
     > {
         self.links = Some(links);
         self
@@ -276,6 +456,7 @@ impl<
         json_ld_type: Vec<&'a str, JSON_LD_TYPE>,
     ) -> ThingDescriptionBuilder<
         'a,
+        CONTEXT,
         ACTIONS,
         PROPERTIES,
         EVENTS,
@@ -283,6 +464,12 @@ impl<
         DESCRIPTIONS,
         JSON_LD_TYPE,
         LINKS,
+        FORMS,
+        SECURITY,
+        SECURITY_DEFINITIONS,
+        PROFILE,
+        SCHEMA_DEFINITIONS,
+        URI_VARIABLES,
     > {
         self.json_ld_type = Some(json_ld_type);
         self
@@ -290,8 +477,23 @@ impl<
 
     pub fn build(
         self,
-    ) -> ThingDescription<'a, ACTIONS, PROPERTIES, EVENTS, TITLES, DESCRIPTIONS, JSON_LD_TYPE, LINKS>
-    {
+    ) -> ThingDescription<
+        'a,
+        CONTEXT,
+        ACTIONS,
+        PROPERTIES,
+        EVENTS,
+        TITLES,
+        DESCRIPTIONS,
+        JSON_LD_TYPE,
+        LINKS,
+        FORMS,
+        SECURITY,
+        SECURITY_DEFINITIONS,
+        PROFILE,
+        SCHEMA_DEFINITIONS,
+        URI_VARIABLES,
+    > {
         ThingDescription {
             context: self.context,
             json_ld_type: self.json_ld_type,
@@ -308,6 +510,10 @@ impl<
             actions: self.actions,
             events: self.events,
             links: self.links,
+            security: self.security,
+            profile: self.profile,
+            schema_definitions: self.schema_definitions,
+            uri_variables: self.uri_variables,
         }
     }
 }
@@ -396,7 +602,7 @@ mod tests {
         json_ld_type.push("saref:LightSwitch").unwrap();
 
         let thing_description =
-            ThingDescription::<2, 2, 0, 0, 0, JSON_LD_TYPE_LENGTH, LINKS_LENGTH>::builder()
+            ThingDescription::<2, 2, 2, 0, 0, 0, JSON_LD_TYPE_LENGTH, LINKS_LENGTH>::builder()
                 .title("Test TD")
                 .json_ld_type(json_ld_type)
                 .properties(properties)
@@ -404,7 +610,7 @@ mod tests {
                 .links(links)
                 .build();
 
-        let expected_result = r#"{"@context":"https://www.w3.org/2022/wot/td/v1.1","@type":["saref:LightSwitch"],"title":"Test TD","properties":{"status":{"title":"Status","type":"boolean"}},"actions":{"toggle":{"input":{"title":"Toggle Data"}},"toggle2":{}},"links":[{"href":"https://example.org"}]}"#;
+        let expected_result = r#"{"@context":["https://www.w3.org/2022/wot/td/v1.1"],"@type":["saref:LightSwitch"],"title":"Test TD","properties":{"status":{"title":"Status","type":"boolean"}},"actions":{"toggle":{"input":{"title":"Toggle Data"}},"toggle2":{}},"links":[{"href":"https://example.org"}]}"#;
         let actual_result: String<300> = to_string(&thing_description)?;
 
         assert_eq!(expected_result, actual_result.as_str());
