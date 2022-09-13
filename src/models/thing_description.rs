@@ -1,8 +1,6 @@
-use heapless::FnvIndexMap;
+use heapless::{FnvIndexMap, Vec};
 use serde::Serialize;
 use serde_with::skip_serializing_none;
-
-use crate::data_structures::{array::ArrayEntry, map::MapEntry};
 
 use super::{action::Action, event::Event, link::Link, property::Property};
 
@@ -29,16 +27,20 @@ pub struct ThingDescription<
     const ACTIONS: usize = 0,
     const PROPERTIES: usize = 0,
     const EVENTS: usize = 0,
+    const TITLES: usize = 0,
+    const DESCRIPTIONS: usize = 0,
+    const JSON_LD_TYPE: usize = 0,
+    const LINKS: usize = 0,
 > {
     #[serde(rename = "@context")]
     pub context: ContextEntry<'a>,
     #[serde(rename = "@type")]
-    pub json_ld_type: Option<ArrayEntry<'a, &'a str>>,
+    pub json_ld_type: Option<Vec<&'a str, JSON_LD_TYPE>>,
     pub id: Option<&'a str>,
     pub title: &'a str,
-    // TODO: Add titles
+    pub titles: Option<FnvIndexMap<&'a str, &'a str, TITLES>>,
     pub description: Option<&'a str>,
-    // TODO: Add descriptions
+    pub descriptions: Option<FnvIndexMap<&'a str, &'a str, DESCRIPTIONS>>,
     // TODO: Add version
     pub created: Option<&'a str>,
     pub modified: Option<&'a str>,
@@ -47,7 +49,7 @@ pub struct ThingDescription<
     pub properties: Option<FnvIndexMap<&'a str, Property<'a>, PROPERTIES>>,
     pub actions: Option<FnvIndexMap<&'a str, Action<'a>, ACTIONS>>,
     pub events: Option<FnvIndexMap<&'a str, Event<'a>, EVENTS>>,
-    pub links: Option<ArrayEntry<'a, Link<'a>>>,
+    pub links: Option<Vec<Link<'a>, LINKS>>,
     // TODO: Add forms
     // TODO: Add security
     // TODO: Add securityDefinitions
@@ -62,14 +64,18 @@ pub struct ThingDescriptionBuilder<
     const ACTIONS: usize = 0,
     const PROPERTIES: usize = 0,
     const EVENTS: usize = 0,
+    const TITLES: usize = 0,
+    const DESCRIPTIONS: usize = 0,
+    const JSON_LD_TYPE: usize = 0,
+    const LINKS: usize = 0,
 > {
     pub context: ContextEntry<'a>,
-    pub json_ld_type: Option<ArrayEntry<'a, &'a str>>,
+    pub json_ld_type: Option<Vec<&'a str, JSON_LD_TYPE>>,
     pub id: Option<&'a str>,
     pub title: &'a str,
-    pub titles: Option<MapEntry<'a, &'a str>>,
+    pub titles: Option<FnvIndexMap<&'a str, &'a str, TITLES>>,
     pub description: Option<&'a str>,
-    pub descriptions: Option<MapEntry<'a, &'a str>>,
+    pub descriptions: Option<FnvIndexMap<&'a str, &'a str, DESCRIPTIONS>>,
     // TODO: Add version
     pub created: Option<&'a str>,
     pub modified: Option<&'a str>,
@@ -78,7 +84,7 @@ pub struct ThingDescriptionBuilder<
     pub properties: Option<FnvIndexMap<&'a str, Property<'a>, PROPERTIES>>,
     pub actions: Option<FnvIndexMap<&'a str, Action<'a>, ACTIONS>>,
     pub events: Option<FnvIndexMap<&'a str, Event<'a>, EVENTS>>,
-    pub links: Option<ArrayEntry<'a, Link<'a>>>,
+    pub links: Option<Vec<Link<'a>, LINKS>>,
     // TODO: Add forms
     // TODO: Add security
     // TODO: Add securityDefinitions
@@ -87,10 +93,39 @@ pub struct ThingDescriptionBuilder<
     // TODO: Add uriVariables
 }
 
-impl<'a, const ACTIONS: usize, const PROPERTIES: usize, const EVENTS: usize>
-    ThingDescriptionBuilder<'a, ACTIONS, PROPERTIES, EVENTS>
+impl<
+        'a,
+        const ACTIONS: usize,
+        const PROPERTIES: usize,
+        const EVENTS: usize,
+        const TITLES: usize,
+        const DESCRIPTIONS: usize,
+        const JSON_LD_TYPE: usize,
+        const LINKS: usize,
+    >
+    ThingDescriptionBuilder<
+        'a,
+        ACTIONS,
+        PROPERTIES,
+        EVENTS,
+        TITLES,
+        DESCRIPTIONS,
+        JSON_LD_TYPE,
+        LINKS,
+    >
 {
-    pub fn new(title: &'a str) -> ThingDescriptionBuilder<'a, ACTIONS, PROPERTIES> {
+    pub fn new(
+        title: &'a str,
+    ) -> ThingDescriptionBuilder<
+        'a,
+        ACTIONS,
+        PROPERTIES,
+        EVENTS,
+        TITLES,
+        DESCRIPTIONS,
+        JSON_LD_TYPE,
+        LINKS,
+    > {
         ThingDescriptionBuilder {
             title,
             titles: None,
@@ -113,14 +148,32 @@ impl<'a, const ACTIONS: usize, const PROPERTIES: usize, const EVENTS: usize>
     pub fn base(
         mut self,
         base: &'a str,
-    ) -> ThingDescriptionBuilder<'a, ACTIONS, PROPERTIES, EVENTS> {
+    ) -> ThingDescriptionBuilder<
+        'a,
+        ACTIONS,
+        PROPERTIES,
+        EVENTS,
+        TITLES,
+        DESCRIPTIONS,
+        JSON_LD_TYPE,
+        LINKS,
+    > {
         self.base = Some(base);
         self
     }
     pub fn properties(
         mut self,
         properties: FnvIndexMap<&'a str, Property<'a>, PROPERTIES>,
-    ) -> ThingDescriptionBuilder<'a, ACTIONS, PROPERTIES, EVENTS> {
+    ) -> ThingDescriptionBuilder<
+        'a,
+        ACTIONS,
+        PROPERTIES,
+        EVENTS,
+        TITLES,
+        DESCRIPTIONS,
+        JSON_LD_TYPE,
+        LINKS,
+    > {
         self.properties = Some(properties);
         self
     }
@@ -128,7 +181,16 @@ impl<'a, const ACTIONS: usize, const PROPERTIES: usize, const EVENTS: usize>
     pub fn actions(
         mut self,
         actions: FnvIndexMap<&'a str, Action<'a>, ACTIONS>,
-    ) -> ThingDescriptionBuilder<'a, ACTIONS, PROPERTIES, EVENTS> {
+    ) -> ThingDescriptionBuilder<
+        'a,
+        ACTIONS,
+        PROPERTIES,
+        EVENTS,
+        TITLES,
+        DESCRIPTIONS,
+        JSON_LD_TYPE,
+        LINKS,
+    > {
         self.actions = Some(actions);
         self
     }
@@ -136,34 +198,66 @@ impl<'a, const ACTIONS: usize, const PROPERTIES: usize, const EVENTS: usize>
     pub fn events(
         mut self,
         events: FnvIndexMap<&'a str, Event<'a>, EVENTS>,
-    ) -> ThingDescriptionBuilder<'a, ACTIONS, PROPERTIES, EVENTS> {
+    ) -> ThingDescriptionBuilder<
+        'a,
+        ACTIONS,
+        PROPERTIES,
+        EVENTS,
+        TITLES,
+        DESCRIPTIONS,
+        JSON_LD_TYPE,
+        LINKS,
+    > {
         self.events = Some(events);
         self
     }
 
     pub fn links(
         mut self,
-        links: ArrayEntry<'a, Link<'a>>,
-    ) -> ThingDescriptionBuilder<'a, ACTIONS, PROPERTIES, EVENTS> {
+        links: Vec<Link<'a>, LINKS>,
+    ) -> ThingDescriptionBuilder<
+        'a,
+        ACTIONS,
+        PROPERTIES,
+        EVENTS,
+        TITLES,
+        DESCRIPTIONS,
+        JSON_LD_TYPE,
+        LINKS,
+    > {
         self.links = Some(links);
         self
     }
 
     pub fn json_ld_type(
         mut self,
-        json_ld_type: ArrayEntry<'a, &'a str>,
-    ) -> ThingDescriptionBuilder<'a, ACTIONS, PROPERTIES, EVENTS> {
+        json_ld_type: Vec<&'a str, JSON_LD_TYPE>,
+    ) -> ThingDescriptionBuilder<
+        'a,
+        ACTIONS,
+        PROPERTIES,
+        EVENTS,
+        TITLES,
+        DESCRIPTIONS,
+        JSON_LD_TYPE,
+        LINKS,
+    > {
         self.json_ld_type = Some(json_ld_type);
         self
     }
 
-    pub fn build(self) -> ThingDescription<'a, ACTIONS, PROPERTIES, EVENTS> {
+    pub fn build(
+        self,
+    ) -> ThingDescription<'a, ACTIONS, PROPERTIES, EVENTS, TITLES, DESCRIPTIONS, JSON_LD_TYPE, LINKS>
+    {
         ThingDescription {
             context: self.context,
             json_ld_type: self.json_ld_type,
             id: self.id,
             title: self.title,
+            titles: self.titles,
             description: self.description,
+            descriptions: self.descriptions,
             created: self.created,
             modified: self.modified,
             support: self.support,
@@ -179,17 +273,14 @@ impl<'a, const ACTIONS: usize, const PROPERTIES: usize, const EVENTS: usize>
 #[cfg(test)]
 mod tests {
 
-    use crate::{
-        data_structures::array::ArrayEntry,
-        models::{
-            action::Action,
-            data_schema::{DataSchema, DataType},
-            link::Link,
-            property::Property,
-            thing_description::ThingDescriptionBuilder,
-        },
+    use crate::models::{
+        action::Action,
+        data_schema::{DataSchema, DataType},
+        link::Link,
+        property::Property,
+        thing_description::ThingDescriptionBuilder,
     };
-    use heapless::FnvIndexMap;
+    use heapless::{FnvIndexMap, Vec};
     use serde_json_core::{heapless::String, ser::Error, to_string};
 
     #[test]
@@ -255,12 +346,25 @@ mod tests {
         actions.insert("toggle", first_action).unwrap();
         actions.insert("toggle2", second_action).unwrap();
 
-        let links = ArrayEntry::new(Link {
-            href: "https://example.org",
-        });
+        const LINKS_LENGTH: usize = 1;
 
-        let thing_description = ThingDescriptionBuilder::<2, 2>::new("Test TD")
-            .json_ld_type(ArrayEntry::new("saref:LightSwitch"))
+        let mut links = Vec::<Link, LINKS_LENGTH>::new();
+        links
+            .push(Link {
+                href: "https://example.org",
+            })
+            .unwrap();
+
+        const JSON_LD_TYPE_LENGTH: usize = 2;
+
+        let mut json_ld_type = Vec::<&str, JSON_LD_TYPE_LENGTH>::new();
+        json_ld_type.push("saref:LightSwitch").unwrap();
+
+        let thing_description =
+            ThingDescriptionBuilder::<2, 2, 0, 0, 0, JSON_LD_TYPE_LENGTH, LINKS_LENGTH>::new(
+                "Test TD",
+            )
+            .json_ld_type(json_ld_type)
             .properties(properties)
             .actions(actions)
             .links(links)

@@ -1,15 +1,19 @@
-use heapless::FnvIndexMap;
+use heapless::{FnvIndexMap, Vec};
 use serde::Serialize;
 use serde_with::skip_serializing_none;
-
-use crate::data_structures::{array::ArrayEntry, map::MapEntry};
 
 #[skip_serializing_none]
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct DataSchema<'a, const TITLES: usize = 0, const DESCRIPTIONS: usize = 0> {
+pub struct DataSchema<
+    'a,
+    const TITLES: usize = 0,
+    const DESCRIPTIONS: usize = 0,
+    const JSON_LD_TYPE: usize = 0,
+    const ONE_OF: usize = 0,
+> {
     #[serde(rename = "@type")]
-    pub json_ld_type: Option<ArrayEntry<'a, &'a str>>,
+    pub json_ld_type: Option<Vec<&'a str, JSON_LD_TYPE>>,
     pub title: Option<&'a str>,
     pub titles: Option<FnvIndexMap<&'a str, &'a str, TITLES>>,
     pub description: Option<&'a str>,
@@ -19,7 +23,7 @@ pub struct DataSchema<'a, const TITLES: usize = 0, const DESCRIPTIONS: usize = 0
     pub default: Option<DataStructure<'a>>,
     pub unit: Option<&'a str>,
     #[serde(rename = "oneOf")]
-    pub one_of: Option<&'a MapEntry<'a, DataSchema<'a>>>,
+    pub one_of: Option<&'a FnvIndexMap<&'a str, DataSchema<'a>, ONE_OF>>,
     #[serde(rename = "enum")]
     pub enumeration: Option<DataStructure<'a>>,
     #[serde(rename = "readOnly")]
