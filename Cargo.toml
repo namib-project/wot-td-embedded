@@ -3,6 +3,7 @@ name = "wot-td-embedded"
 version = "0.1.0"
 edition = "2021"
 authors = ["Jan Romann <jan.romann@uni-bremen.de>"]
+license = "MIT OR Apache-2.0"
 keywords = ["web-of-things", "webofthings", "wot", "iot", "embedded", "no_std"]
 
 [dependencies]
