@@ -4,6 +4,7 @@ use serde_with::skip_serializing_none;
 
 use super::{
     action::Action, data_schema::DataSchema, event::Event, link::Link, property::Property,
+    security_definition::SecurityScheme,
 };
 
 pub const WOT_TD_11_CONTEXT: &str = "https://www.w3.org/2022/wot/td/v1.1";
@@ -35,8 +36,8 @@ pub struct ThingDescription<
     const JSON_LD_TYPE: usize = 0,
     const LINKS: usize = 0,
     const FORMS: usize = 0,
-    const SECURITY: usize = 0,
-    const SECURITY_DEFINITIONS: usize = 0,
+    const SECURITY: usize = 2,
+    const SECURITY_DEFINITIONS: usize = 2,
     const PROFILE: usize = 0,
     const SCHEMA_DEFINITIONS: usize = 0,
     const URI_VARIABLES: usize = 0,
@@ -60,8 +61,9 @@ pub struct ThingDescription<
     pub events: Option<FnvIndexMap<&'a str, Event<'a>, EVENTS>>,
     pub links: Option<Vec<Link<'a>, LINKS>>,
     // TODO: Add forms
-    pub security: Option<Vec<Link<'a>, SECURITY>>,
-    // TODO: Add securityDefinitions
+    pub security: Option<Vec<&'a str, SECURITY>>,
+    pub security_definitions:
+        Option<FnvIndexMap<&'a str, SecurityScheme<'a>, SECURITY_DEFINITIONS>>,
     pub profile: Option<Vec<Link<'a>, PROFILE>>,
     pub schema_definitions: Option<FnvIndexMap<&'a str, DataSchema<'a>, SCHEMA_DEFINITIONS>>,
     pub uri_variables: Option<FnvIndexMap<&'a str, DataSchema<'a>, URI_VARIABLES>>,
@@ -158,8 +160,9 @@ pub struct ThingDescriptionBuilder<
     pub events: Option<FnvIndexMap<&'a str, Event<'a>, EVENTS>>,
     pub links: Option<Vec<Link<'a>, LINKS>>,
     // TODO: Add forms
-    pub security: Option<Vec<Link<'a>, SECURITY>>,
-    // TODO: Add securityDefinitions
+    pub security: Option<Vec<&'a str, SECURITY>>,
+    pub security_definitions:
+        Option<FnvIndexMap<&'a str, SecurityScheme<'a>, SECURITY_DEFINITIONS>>,
     pub profile: Option<Vec<Link<'a>, PROFILE>>,
     pub schema_definitions: Option<FnvIndexMap<&'a str, DataSchema<'a>, SCHEMA_DEFINITIONS>>,
     pub uri_variables: Option<FnvIndexMap<&'a str, DataSchema<'a>, URI_VARIABLES>>,
@@ -224,6 +227,7 @@ impl<
             profile: Default::default(),
             schema_definitions: Default::default(),
             uri_variables: Default::default(),
+            security_definitions: Default::default(),
         }
     }
 }
@@ -304,6 +308,7 @@ impl<
             profile: None,
             schema_definitions: None,
             uri_variables: None,
+            security_definitions: None,
         }
     }
 
@@ -475,6 +480,54 @@ impl<
         self
     }
 
+    pub fn security(
+        mut self,
+        security: Vec<&'a str, SECURITY>,
+    ) -> ThingDescriptionBuilder<
+        'a,
+        CONTEXT,
+        ACTIONS,
+        PROPERTIES,
+        EVENTS,
+        TITLES,
+        DESCRIPTIONS,
+        JSON_LD_TYPE,
+        LINKS,
+        FORMS,
+        SECURITY,
+        SECURITY_DEFINITIONS,
+        PROFILE,
+        SCHEMA_DEFINITIONS,
+        URI_VARIABLES,
+    > {
+        self.security = Some(security);
+        self
+    }
+
+    pub fn security_definitions(
+        mut self,
+        security_definitions: FnvIndexMap<&'a str, SecurityScheme<'a>, SECURITY_DEFINITIONS>,
+    ) -> ThingDescriptionBuilder<
+        'a,
+        CONTEXT,
+        ACTIONS,
+        PROPERTIES,
+        EVENTS,
+        TITLES,
+        DESCRIPTIONS,
+        JSON_LD_TYPE,
+        LINKS,
+        FORMS,
+        SECURITY,
+        SECURITY_DEFINITIONS,
+        PROFILE,
+        SCHEMA_DEFINITIONS,
+        URI_VARIABLES,
+    > {
+        self.security_definitions = Some(security_definitions);
+        self
+    }
+
     pub fn build(
         self,
     ) -> ThingDescription<
@@ -514,6 +567,7 @@ impl<
             profile: self.profile,
             schema_definitions: self.schema_definitions,
             uri_variables: self.uri_variables,
+            security_definitions: self.security_definitions,
         }
     }
 }
@@ -528,6 +582,7 @@ mod tests {
         form::{Form, FormBuilder},
         link::Link,
         property::{Property, PropertyBuilder},
+        security_definition::{SecurityScheme, SecuritySchemeType},
         thing_description::ThingDescription,
     };
     use heapless::{FnvIndexMap, Vec};
@@ -604,17 +659,48 @@ mod tests {
         let mut json_ld_type = Vec::<&str, JSON_LD_TYPE_LENGTH>::new();
         json_ld_type.push("saref:LightSwitch").unwrap();
 
-        let thing_description =
-            ThingDescription::<2, 2, 2, 0, 0, 0, JSON_LD_TYPE_LENGTH, LINKS_LENGTH>::builder()
-                .title("Test TD")
-                .json_ld_type(json_ld_type)
-                .properties(properties)
-                .actions(actions)
-                .links(links)
-                .build();
+        const NO_SEC_KEY: &str = "nosec_sc";
+        const SECURITY_LENGTH: usize = 2;
+        let mut security = Vec::<&str, SECURITY_LENGTH>::new();
+        security.push(NO_SEC_KEY).unwrap();
 
-        let expected_result = r#"{"@context":["https://www.w3.org/2022/wot/td/v1.1"],"@type":["saref:LightSwitch"],"title":"Test TD","properties":{"status":{"forms":[{"href":"coaps://example.org/status"}],"title":"Status","type":"boolean"}},"actions":{"toggle":{"forms":[{"href":"coaps://example.org/toggle"}],"input":{"title":"Toggle Data"}},"toggle2":{"forms":[{"href":"coaps://example.org/toggle2"}]}},"links":[{"href":"https://example.org"}]}"#;
-        let actual_result: String<500> = to_string(&thing_description)?;
+        const SECURITY_DEFINITIONS_LENGTH: usize = 2;
+        let mut security_definitions =
+            FnvIndexMap::<&str, SecurityScheme, SECURITY_DEFINITIONS_LENGTH>::new();
+        security_definitions
+            .insert(
+                NO_SEC_KEY,
+                SecurityScheme {
+                    description: None,
+                    scheme: SecuritySchemeType::Nosec,
+                },
+            )
+            .unwrap();
+
+        let thing_description = ThingDescription::<
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            JSON_LD_TYPE_LENGTH,
+            LINKS_LENGTH,
+            0,
+            SECURITY_LENGTH,
+            SECURITY_DEFINITIONS_LENGTH,
+        >::builder()
+        .title("Test TD")
+        .json_ld_type(json_ld_type)
+        .properties(properties)
+        .actions(actions)
+        .links(links)
+        .security(security)
+        .security_definitions(security_definitions)
+        .build();
+
+        let expected_result = r#"{"@context":["https://www.w3.org/2022/wot/td/v1.1"],"@type":["saref:LightSwitch"],"title":"Test TD","properties":{"status":{"forms":[{"href":"coaps://example.org/status"}],"title":"Status","type":"boolean"}},"actions":{"toggle":{"forms":[{"href":"coaps://example.org/toggle"}],"input":{"title":"Toggle Data"}},"toggle2":{"forms":[{"href":"coaps://example.org/toggle2"}]}},"links":[{"href":"https://example.org"}],"security":["nosec_sc"],"securityDefinitions":{"nosec_sc":{"scheme":"nosec"}}}"#;
+        let actual_result: String<600> = to_string(&thing_description)?;
 
         assert_eq!(expected_result, actual_result.as_str());
         Ok(())

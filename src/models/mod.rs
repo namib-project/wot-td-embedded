@@ -5,4 +5,5 @@ pub mod event;
 pub mod form;
 pub mod link;
 pub mod property;
+pub mod security_definition;
 pub mod thing_description;
