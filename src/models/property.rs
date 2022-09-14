@@ -1,17 +1,18 @@
-use heapless::Vec;
 use serde::{ser::SerializeMap, Serialize};
+
+use crate::data_structures::array::Array;
 
 use super::{data_schema::DataSchema, form::Form};
 
 #[derive(Debug)]
-pub struct Property<'a, const FORMS: usize = 2> {
-    pub forms: &'a Vec<Form<'a>, FORMS>,
-    pub data_schema: &'a DataSchema<'a>,
+pub struct Property<'a> {
+    pub forms: Array<'a, Form<'a>>,
+    pub data_schema: DataSchema<'a>,
     pub observable: Option<bool>,
 }
 
-impl<'a, const FORMS: usize> Property<'a, FORMS> {
-    pub fn builder() -> PropertyBuilder<'a, FORMS> {
+impl<'a> Property<'a> {
+    pub fn builder() -> PropertyBuilder<'a> {
         todo!()
     }
 }
@@ -23,7 +24,7 @@ impl<'a> Serialize for Property<'a> {
     {
         let mut map = serializer.serialize_map(None)?;
 
-        map.serialize_entry("forms", self.forms)?;
+        map.serialize_entry("forms", &self.forms)?;
 
         if self.observable.is_some() {
             map.serialize_entry(
@@ -37,17 +38,14 @@ impl<'a> Serialize for Property<'a> {
 }
 
 #[derive(Debug)]
-pub struct PropertyBuilder<'a, const FORMS: usize = 2> {
-    pub forms: &'a Vec<Form<'a>, FORMS>,
-    pub data_schema: &'a DataSchema<'a>,
+pub struct PropertyBuilder<'a> {
+    pub forms: Array<'a, Form<'a>>,
+    pub data_schema: DataSchema<'a>,
     pub observable: Option<bool>,
 }
 
-impl<'a, const FORMS: usize> PropertyBuilder<'a, FORMS> {
-    pub fn new(
-        forms: &'a Vec<Form, FORMS>,
-        data_schema: &'a DataSchema<'a>,
-    ) -> PropertyBuilder<'a, FORMS> {
+impl<'a> PropertyBuilder<'a> {
+    pub fn new(forms: Array<'a, Form<'a>>, data_schema: DataSchema<'a>) -> PropertyBuilder<'a> {
         PropertyBuilder {
             forms,
             data_schema,
@@ -55,12 +53,17 @@ impl<'a, const FORMS: usize> PropertyBuilder<'a, FORMS> {
         }
     }
 
-    pub fn observable(&mut self, observable: bool) -> &PropertyBuilder<'a, FORMS> {
+    pub fn observable(&mut self, observable: bool) -> &PropertyBuilder<'a> {
         self.observable = Some(observable);
         self
     }
 
-    pub fn build(self) -> Property<'a, FORMS> {
+    pub fn data_schema(&mut self, data_schema: DataSchema<'a>) -> &PropertyBuilder<'a> {
+        self.data_schema = data_schema;
+        self
+    }
+
+    pub fn build(self) -> Property<'a> {
         Property {
             forms: self.forms,
             data_schema: self.data_schema,

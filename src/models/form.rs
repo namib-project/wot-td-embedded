@@ -1,45 +1,45 @@
-use heapless::Vec;
 use serde::Serialize;
 use serde_with::skip_serializing_none;
+
+use crate::data_structures::array::Array;
 
 #[skip_serializing_none]
 #[derive(Serialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct Form<'a, const OP: usize = 2, const SECURITY: usize = 0, const SCOPES: usize = 0> {
+pub struct Form<'a> {
     pub href: &'a str,
     pub content_type: Option<&'a str>,
     pub content_coding: Option<&'a str>,
-    pub op: Option<&'a Vec<&'a str, OP>>,
-    pub security: Option<&'a Vec<&'a str, SECURITY>>,
-    pub scopes: Option<&'a Vec<&'a str, SCOPES>>,
+    // TODO: Add operation type enum
+    pub op: Option<Array<'a, &'a str>>,
+    pub security: Option<Array<'a, &'a str>>,
+    pub scopes: Option<Array<'a, &'a str>>,
     pub subprotocol: Option<&'a str>,
     // TODO: Add response
     // TODO: Add additionalResponses
 }
 
 #[derive(Debug, Default)]
-pub struct FormBuilder<'a, const OP: usize = 0, const SECURITY: usize = 0, const SCOPES: usize = 0>
-{
+pub struct FormBuilder<'a> {
     pub href: &'a str,
     pub content_type: Option<&'a str>,
     pub content_coding: Option<&'a str>,
-    pub op: Option<&'a Vec<&'a str, OP>>,
-    pub security: Option<&'a Vec<&'a str, SECURITY>>,
-    pub scopes: Option<&'a Vec<&'a str, SCOPES>>,
+    // TODO: Add operation type enum
+    pub op: Option<Array<'a, &'a str>>,
+    pub security: Option<Array<'a, &'a str>>,
+    pub scopes: Option<Array<'a, &'a str>>,
     pub subprotocol: Option<&'a str>,
 }
 
-impl<'a, const OP: usize, const SECURITY: usize, const SCOPES: usize>
-    FormBuilder<'a, OP, SECURITY, SCOPES>
-{
-    pub fn new(href: &'a str) -> FormBuilder<'a, OP, SECURITY, SCOPES> {
+impl<'a> FormBuilder<'a> {
+    pub fn new(href: &'a str) -> FormBuilder<'a> {
         FormBuilder {
             href,
             ..Default::default()
         }
     }
 
-    pub fn build(&self) -> Form<'a, OP, SECURITY, SCOPES> {
+    pub fn build(self) -> Form<'a> {
         Form {
             href: self.href,
             content_type: self.content_type,

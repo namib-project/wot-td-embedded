@@ -1,19 +1,21 @@
-use heapless::{FnvIndexMap, Vec};
 use serde::{ser::SerializeMap, Serialize};
 use serde_with::skip_serializing_none;
 
-use crate::serialize_field;
+use crate::{
+    data_structures::{array::Array, map::Map},
+    serialize_field,
+};
 
 use super::common::CommonFields;
 
 #[derive(Debug)]
-pub struct DataSchema<'a, const JSON_LD_TYPE: usize = 0, const ONE_OF: usize = 0> {
-    pub json_ld_type: Option<Vec<&'a str, JSON_LD_TYPE>>,
+pub struct DataSchema<'a> {
+    pub json_ld_type: Option<Array<'a, &'a str>>,
     pub common_fields: Option<CommonFields<'a>>,
     pub constant: Option<DataStructure<'a>>,
     pub default: Option<DataStructure<'a>>,
     pub unit: Option<&'a str>,
-    pub one_of: Option<&'a FnvIndexMap<&'a str, DataSchema<'a>, ONE_OF>>,
+    pub one_of: Option<Map<'a, DataSchema<'a>>>,
     pub enumeration: Option<DataStructure<'a>>,
     pub read_only: Option<bool>,
     pub write_only: Option<bool>,
@@ -21,7 +23,7 @@ pub struct DataSchema<'a, const JSON_LD_TYPE: usize = 0, const ONE_OF: usize = 0
     pub data_type: Option<DataType>,
 }
 
-impl<'a, const JSON_LD_TYPE: usize, const ONE_OF: usize> DataSchema<'a, JSON_LD_TYPE, ONE_OF> {
+impl<'a> DataSchema<'a> {
     pub fn serialize_to_map<S>(&self, mut map: S::SerializeMap) -> Result<S::SerializeMap, S::Error>
     where
         S: serde::Serializer,
@@ -80,11 +82,11 @@ pub enum DataType {
 
 #[skip_serializing_none]
 #[derive(Serialize, Debug)]
-pub enum DataStructure<'a, const LENGTH: usize = 0> {
+pub enum DataStructure<'a> {
     Null,
     String(&'a str),
     Integer(i64),
     Number(f64),
-    Object(&'a FnvIndexMap<&'a str, DataStructure<'a>, LENGTH>),
-    Array(&'a Vec<DataStructure<'a>, LENGTH>),
+    Object(Map<'a, &'a DataStructure<'a>>),
+    Array(Array<'a, &'a DataStructure<'a>>),
 }

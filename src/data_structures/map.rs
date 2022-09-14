@@ -1,0 +1,78 @@
+use serde::{ser::SerializeMap, Serialize};
+
+#[derive(Debug, Default)]
+pub struct Map<'a, T: Serialize> {
+    last: Option<&'a MapEntry<'a, T>>,
+}
+
+impl<'a, T: Serialize> Serialize for Map<'a, T> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        if self.last.is_none() {
+            return serializer.serialize_map(Some(0))?.end();
+        }
+
+        self.last.serialize(serializer)
+    }
+}
+
+impl<'a, T: Serialize> Map<'a, T> {
+    pub fn new() -> Map<'a, T> {
+        Map { last: None }
+    }
+
+    pub fn insert(mut self, entry: &'a mut MapEntry<'a, T>) -> Map<'a, T> {
+        entry.next = self.last;
+        self.last = Some(entry);
+
+        self
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct MapEntry<'a, T>
+where
+    T: Serialize,
+{
+    key: &'a str,
+    value: T,
+    next: Option<&'a MapEntry<'a, T>>,
+}
+
+impl<'a, T: Serialize> MapEntry<'a, T> {
+    pub fn new(key: &'a str, value: T) -> MapEntry<T> {
+        MapEntry {
+            key,
+            value,
+            next: None,
+        }
+    }
+}
+
+impl<'a, T: Serialize> Serialize for MapEntry<'a, T> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut map = serializer.serialize_map(None)?;
+
+        let mut current_entry = self;
+
+        loop {
+            map.serialize_entry(current_entry.key, &current_entry.value)?;
+
+            if current_entry.next.is_none() {
+                break;
+            }
+
+            current_entry = current_entry
+                .next
+                .as_ref()
+                .expect("Expected a next element");
+        }
+
+        map.end()
+    }
+}

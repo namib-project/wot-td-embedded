@@ -1,63 +1,52 @@
-use heapless::FnvIndexMap;
+use crate::data_structures::map::Map;
 
 #[derive(Debug)]
-pub struct CommonFields<'a, const TITLES: usize = 0, const DESCRIPTIONS: usize = 0> {
+pub struct CommonFields<'a> {
     pub title: Option<&'a str>,
-    pub titles: Option<&'a FnvIndexMap<&'a str, &'a str, TITLES>>,
+    pub titles: Option<&'a Map<'a, &'a str>>,
     pub description: Option<&'a str>,
-    pub descriptions: Option<&'a FnvIndexMap<&'a str, &'a str, DESCRIPTIONS>>,
+    pub descriptions: Option<&'a Map<'a, &'a str>>,
 }
-impl<'a, const TITLES: usize, const DESCRIPTIONS: usize> CommonFields<'a, TITLES, DESCRIPTIONS> {
-    pub fn builder() -> CommonFieldsBuilder<'a, TITLES, DESCRIPTIONS> {
+impl<'a> CommonFields<'a> {
+    pub fn builder() -> CommonFieldsBuilder<'a> {
         CommonFieldsBuilder::default()
     }
 }
 
 #[derive(Default)]
-pub struct CommonFieldsBuilder<'a, const TITLES: usize = 0, const DESCRIPTIONS: usize = 0> {
+pub struct CommonFieldsBuilder<'a> {
     pub title: Option<&'a str>,
-    pub titles: Option<&'a FnvIndexMap<&'a str, &'a str, TITLES>>,
+    pub titles: Option<&'a Map<'a, &'a str>>,
     pub description: Option<&'a str>,
-    pub descriptions: Option<&'a FnvIndexMap<&'a str, &'a str, DESCRIPTIONS>>,
+    pub descriptions: Option<&'a Map<'a, &'a str>>,
 }
 
-impl<'a, const TITLES: usize, const DESCRIPTIONS: usize>
-    CommonFieldsBuilder<'a, TITLES, DESCRIPTIONS>
-{
-    pub fn new() -> CommonFieldsBuilder<'a, TITLES, DESCRIPTIONS> {
+impl<'a> CommonFieldsBuilder<'a> {
+    pub fn new() -> CommonFieldsBuilder<'a> {
         CommonFieldsBuilder::default()
     }
 
-    pub fn title(&mut self, title: &'a str) -> &mut CommonFieldsBuilder<'a, TITLES, DESCRIPTIONS> {
+    pub fn title(mut self, title: &'a str) -> CommonFieldsBuilder<'a> {
         self.title = Some(title);
         self
     }
 
-    pub fn titles(
-        &mut self,
-        titles: &'a FnvIndexMap<&'a str, &'a str, TITLES>,
-    ) -> &mut CommonFieldsBuilder<'a, TITLES, DESCRIPTIONS> {
+    pub fn titles(mut self, titles: &'a Map<'a, &'a str>) -> CommonFieldsBuilder<'a> {
         self.titles = Some(titles);
         self
     }
 
-    pub fn description(
-        &mut self,
-        description: &'a str,
-    ) -> &mut CommonFieldsBuilder<'a, TITLES, DESCRIPTIONS> {
+    pub fn description(mut self, description: &'a str) -> CommonFieldsBuilder<'a> {
         self.description = Some(description);
         self
     }
 
-    pub fn descriptions(
-        &mut self,
-        descriptions: &'a FnvIndexMap<&'a str, &'a str, DESCRIPTIONS>,
-    ) -> &mut CommonFieldsBuilder<'a, TITLES, DESCRIPTIONS> {
+    pub fn descriptions(mut self, descriptions: &'a Map<'a, &'a str>) -> CommonFieldsBuilder<'a> {
         self.descriptions = Some(descriptions);
         self
     }
 
-    pub fn build(&mut self) -> CommonFields<'a, TITLES, DESCRIPTIONS> {
+    pub fn build(self) -> CommonFields<'a> {
         CommonFields {
             title: self.title,
             titles: self.titles,

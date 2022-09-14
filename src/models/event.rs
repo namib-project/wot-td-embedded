@@ -1,37 +1,38 @@
-use heapless::Vec;
 use serde::Serialize;
 use serde_with::skip_serializing_none;
+
+use crate::data_structures::array::Array;
 
 use super::{data_schema::DataSchema, form::Form};
 
 #[skip_serializing_none]
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Event<'a, const FORMS: usize = 2> {
-    pub forms: &'a Vec<Form<'a>, FORMS>,
+pub struct Event<'a> {
+    pub forms: Array<'a, Form<'a>>,
     pub subscription: Option<&'a DataSchema<'a>>,
     pub data: Option<&'a DataSchema<'a>>,
     pub data_response: Option<&'a DataSchema<'a>>,
     pub cancellation: Option<&'a DataSchema<'a>>,
 }
 
-impl<'a, const FORMS: usize> Event<'a, FORMS> {
-    pub fn builder() -> EventBuilder<'a, FORMS> {
+impl<'a> Event<'a> {
+    pub fn builder() -> EventBuilder<'a> {
         todo!()
     }
 }
 
 #[derive(Debug)]
-pub struct EventBuilder<'a, const FORMS: usize = 2> {
-    pub forms: &'a Vec<Form<'a>, FORMS>,
+pub struct EventBuilder<'a> {
+    pub forms: Array<'a, Form<'a>>,
     pub subscription: Option<&'a DataSchema<'a>>,
     pub data: Option<&'a DataSchema<'a>>,
     pub data_response: Option<&'a DataSchema<'a>>,
     pub cancellation: Option<&'a DataSchema<'a>>,
 }
 
-impl<'a, const FORMS: usize> EventBuilder<'a, FORMS> {
-    pub fn new(forms: &'a Vec<Form, FORMS>) -> EventBuilder<'a, FORMS> {
+impl<'a> EventBuilder<'a> {
+    pub fn new(forms: Array<'a, Form<'a>>) -> EventBuilder<'a> {
         EventBuilder {
             forms,
             subscription: None,
@@ -41,27 +42,27 @@ impl<'a, const FORMS: usize> EventBuilder<'a, FORMS> {
         }
     }
 
-    pub fn subscription(&mut self, subscription: &'a DataSchema<'a>) -> &EventBuilder<'a, FORMS> {
+    pub fn subscription(&mut self, subscription: &'a DataSchema<'a>) -> &EventBuilder<'a> {
         self.subscription = Some(subscription);
         self
     }
 
-    pub fn data(&mut self, data: &'a DataSchema<'a>) -> &EventBuilder<'a, FORMS> {
+    pub fn data(&mut self, data: &'a DataSchema<'a>) -> &EventBuilder<'a> {
         self.data = Some(data);
         self
     }
 
-    pub fn data_response(&mut self, data_response: &'a DataSchema<'a>) -> &EventBuilder<'a, FORMS> {
+    pub fn data_response(&mut self, data_response: &'a DataSchema<'a>) -> &EventBuilder<'a> {
         self.data_response = Some(data_response);
         self
     }
 
-    pub fn cancellation(&mut self, cancellation: &'a DataSchema<'a>) -> &EventBuilder<'a, FORMS> {
+    pub fn cancellation(&mut self, cancellation: &'a DataSchema<'a>) -> &EventBuilder<'a> {
         self.cancellation = Some(cancellation);
         self
     }
 
-    pub fn build(&self) -> Event<'a, FORMS> {
+    pub fn build(self) -> Event<'a> {
         Event {
             forms: self.forms,
             subscription: self.subscription,
