@@ -617,8 +617,9 @@ mod tests {
         properties.insert("status", first_property).unwrap();
 
         let mut first_action_forms = Vec::<Form, 2>::new();
-        let first_action_form = FormBuilder::new("coaps://example.org/toggle").build();
-        first_action_forms.push(first_action_form).unwrap();
+        first_action_forms
+            .push(FormBuilder::new("coaps://example.org/toggle").build())
+            .unwrap();
         let action_input = DataSchema {
             json_ld_type: None,
             common_fields: Some(CommonFields::builder().title("Toggle Data").build()),
@@ -633,19 +634,23 @@ mod tests {
             data_type: None,
         };
 
-        let first_action = ActionBuilder::new(&first_action_forms)
-            .input(&action_input)
-            .build();
-
         let mut second_action_forms = Vec::<Form, 2>::new();
-        let second_action_form = FormBuilder::new("coaps://example.org/toggle2").build();
-        second_action_forms.push(second_action_form).unwrap();
-
-        let second_action = ActionBuilder::new(&second_action_forms).build();
+        second_action_forms
+            .push(FormBuilder::new("coaps://example.org/toggle2").build())
+            .unwrap();
 
         let mut actions = FnvIndexMap::<&str, Action, 2>::new();
-        actions.insert("toggle", first_action).unwrap();
-        actions.insert("toggle2", second_action).unwrap();
+        actions
+            .insert(
+                "toggle",
+                ActionBuilder::new(&first_action_forms)
+                    .input(&action_input)
+                    .build(),
+            )
+            .unwrap();
+        actions
+            .insert("toggle2", ActionBuilder::new(&second_action_forms).build())
+            .unwrap();
 
         const LINKS_LENGTH: usize = 1;
 

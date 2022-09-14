@@ -2,15 +2,9 @@ use heapless::{FnvIndexMap, Vec};
 use serde::{ser::SerializeMap, Serialize};
 use serde_with::skip_serializing_none;
 
-use super::common::CommonFields;
+use crate::serialize_field;
 
-macro_rules! serialize_field {
-    ($key:expr, $field:expr, $map:expr) => {
-        if $field.is_some() {
-            $map.serialize_entry($key, &$field)?;
-        }
-    };
-}
+use super::common::CommonFields;
 
 #[derive(Debug)]
 pub struct DataSchema<'a, const JSON_LD_TYPE: usize = 0, const ONE_OF: usize = 0> {

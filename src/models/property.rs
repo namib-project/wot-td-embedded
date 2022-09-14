@@ -60,7 +60,7 @@ impl<'a, const FORMS: usize> PropertyBuilder<'a, FORMS> {
         self
     }
 
-    pub fn build(&self) -> Property<'a, FORMS> {
+    pub fn build(self) -> Property<'a, FORMS> {
         Property {
             forms: self.forms,
             data_schema: self.data_schema,
