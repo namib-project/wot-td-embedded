@@ -56,11 +56,6 @@ impl<'a, T: Serialize> Serialize for ArrayEntry<'a, T> {
     where
         S: serde::Serializer,
     {
-        // TODO: Allow single values for certain data types
-        //
-        // if self.next.is_none() {
-        //     return serializer.serialize_some(&self.value);
-        // }
 
         let mut sequence = serializer.serialize_seq(None)?;
 

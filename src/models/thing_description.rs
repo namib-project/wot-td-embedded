@@ -8,7 +8,7 @@ use crate::{
 
 use super::{
     action::Action, data_schema::DataSchema, event::Event, form::Form, link::Link,
-    property::Property, security_definition::SecurityScheme,
+    property::Property, security_definition::SecurityScheme, version_info::VersionInfo,
 };
 
 #[derive(Serialize, Debug)]
@@ -37,7 +37,7 @@ pub struct ThingDescription<'a> {
     pub titles: Option<Map<'a, &'a str>>,
     pub description: Option<&'a str>,
     pub descriptions: Option<Map<'a, &'a str>>,
-    // TODO: Add version
+    pub version: Option<VersionInfo<'a>>,
     pub created: Option<&'a str>,
     pub modified: Option<&'a str>,
     pub support: Option<&'a str>,
@@ -69,7 +69,7 @@ pub struct ThingDescriptionBuilder<'a> {
     pub titles: Option<Map<'a, &'a str>>,
     pub description: Option<&'a str>,
     pub descriptions: Option<Map<'a, &'a str>>,
-    // TODO: Add version
+    pub version: Option<VersionInfo<'a>>,
     pub created: Option<&'a str>,
     pub modified: Option<&'a str>,
     pub support: Option<&'a str>,
@@ -98,6 +98,7 @@ impl<'a> ThingDescriptionBuilder<'a> {
             titles: Default::default(),
             description: Default::default(),
             descriptions: Default::default(),
+            version: Default::default(),
             created: Default::default(),
             modified: Default::default(),
             support: Default::default(),
@@ -121,26 +122,8 @@ impl<'a> ThingDescriptionBuilder<'a> {
         let context = Array::new(ContextEntry::default());
         ThingDescriptionBuilder {
             title,
-            titles: None,
             context,
-            json_ld_type: None,
-            id: None,
-            description: None,
-            descriptions: None,
-            created: None,
-            modified: None,
-            support: None,
-            base: None,
-            properties: None,
-            actions: None,
-            events: None,
-            links: None,
-            forms: None,
-            security: None,
-            profile: None,
-            schema_definitions: None,
-            uri_variables: None,
-            security_definitions: None,
+            ..ThingDescriptionBuilder::default()
         }
     }
 
@@ -156,6 +139,11 @@ impl<'a> ThingDescriptionBuilder<'a> {
 
     pub fn base(mut self, base: &'a str) -> ThingDescriptionBuilder<'a> {
         self.base = Some(base);
+        self
+    }
+
+    pub fn version(mut self, version: VersionInfo<'a>) -> ThingDescriptionBuilder<'a> {
+        self.version = Some(version);
         self
     }
 
@@ -209,6 +197,7 @@ impl<'a> ThingDescriptionBuilder<'a> {
             titles: self.titles,
             description: self.description,
             descriptions: self.descriptions,
+            version: self.version,
             created: self.created,
             modified: self.modified,
             support: self.support,

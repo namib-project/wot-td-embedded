@@ -6,6 +6,7 @@ pub mod link;
 pub mod property;
 pub mod security_definition;
 pub mod thing_description;
+pub mod version_info;
 
 #[macro_export]
 macro_rules! serialize_field {
