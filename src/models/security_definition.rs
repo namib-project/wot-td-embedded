@@ -112,36 +112,30 @@ pub enum ComboVariant<'a> {
 #[derive(Debug)]
 pub struct BasicSecurityScheme<'a> {
     pub name: Option<&'a str>,
-    // TODO: Replace with enum
-    pub in_: Option<&'a str>,
+    pub in_: Option<In>,
 }
 
 #[derive(Debug)]
 pub struct DigestSecuritySchmeme<'a> {
     pub name: Option<&'a str>,
-    // TODO: Replace with enum
-    pub in_: Option<&'a str>,
-    // TODO: Replace with enum
-    pub qop: Option<&'a str>,
+    pub in_: Option<In>,
+    pub qop: Option<QoP>,
 }
 
 #[derive(Debug)]
 pub struct ApiKeySecurityScheme<'a> {
     pub name: Option<&'a str>,
-    // TODO: Replace with enum
-    pub in_: Option<&'a str>,
+    pub in_: Option<In>,
 }
 
 #[derive(Debug)]
 pub struct BearerSecurityScheme<'a> {
     pub authorization: Option<&'a str>,
     pub name: Option<&'a str>,
-    // TODO: Replace with enum
     pub alg: Option<&'a str>,
     pub format: Option<&'a str>,
-    pub in_: Option<&'a str>,
-    // TODO: Replace with enum
-    pub qop: Option<&'a str>,
+    pub in_: Option<In>,
+    pub qop: Option<QoP>,
 }
 
 #[derive(Debug)]
@@ -241,4 +235,21 @@ impl<'a> Serialize for SecurityScheme<'a> {
 
         map.end()
     }
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum In {
+    Header,
+    Query,
+    Body,
+    Cookie,
+    Auto,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum QoP {
+    Auth,
+    AuthInt,
 }
