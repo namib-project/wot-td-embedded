@@ -348,7 +348,11 @@ mod tests {
             Event::builder(Array::<Form>::new(
                 FormBuilder::new("coaps://example.org/overheating").build(),
             ))
-            .data(DataSchema::builder().data_type(DataType::Integer).build())
+            .data(
+                DataSchema::builder()
+                    .data_type(DataType::Integer(None))
+                    .build(),
+            )
             .build(),
         );
 

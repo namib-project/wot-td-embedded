@@ -9,12 +9,23 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
+pub mod array_schema;
+pub mod integer_schema;
+pub mod number_schema;
+pub mod object_schema;
+pub mod string_schema;
+
 use serde::{ser::SerializeMap, Serialize};
 use serde_with::skip_serializing_none;
 
 use crate::{
     data_structures::{array::Array, map::Map},
     serialize_field,
+};
+
+use self::{
+    array_schema::ArraySchema, integer_schema::IntegerSchema, number_schema::NumberSchema,
+    object_schema::ObjectSchema, string_schema::StringSchema,
 };
 
 #[derive(Debug)]
@@ -32,7 +43,7 @@ pub struct DataSchema<'a> {
     pub read_only: Option<bool>,
     pub write_only: Option<bool>,
     pub format: Option<&'a str>,
-    pub data_type: Option<DataType>,
+    pub data_type: Option<DataType<'a>>,
 }
 
 impl<'a> DataSchema<'a> {
@@ -70,7 +81,7 @@ pub struct DataSchemaBuilder<'a> {
     pub read_only: Option<bool>,
     pub write_only: Option<bool>,
     pub format: Option<&'a str>,
-    pub data_type: Option<DataType>,
+    pub data_type: Option<DataType<'a>>,
 }
 
 impl<'a> DataSchemaBuilder<'a> {
@@ -145,7 +156,7 @@ impl<'a> DataSchemaBuilder<'a> {
         self
     }
 
-    pub fn data_type(mut self, data_type: DataType) -> Self {
+    pub fn data_type(mut self, data_type: DataType<'a>) -> Self {
         self.data_type = Some(data_type);
         self
     }
@@ -188,27 +199,64 @@ impl<'a> DataSchema<'a> {
         serialize_field!("readOnly", &self.read_only, map);
         serialize_field!("writeOnly", &self.write_only, map);
         serialize_field!("format", &self.format, map);
-        serialize_field!("type", &self.data_type, map);
+
+        let mut map = map;
+
+        if self.data_type.is_some() {
+            map.serialize_key("type")?;
+            match &self.data_type.as_ref().unwrap() {
+                DataType::Object(schema) => {
+                    map.serialize_value("object")?;
+                    // TODO: Replace with macro
+                    if schema.is_some() {
+                        map = schema.as_ref().unwrap().serialize_to_map::<S>(map)?;
+                    }
+                }
+                DataType::Array(schema) => {
+                    map.serialize_value("array")?;
+                    if schema.is_some() {
+                        map = schema.as_ref().unwrap().serialize_to_map::<S>(map)?;
+                    }
+                }
+                DataType::String(schema) => {
+                    map.serialize_value("string")?;
+                    if schema.is_some() {
+                        map = schema.as_ref().unwrap().serialize_to_map::<S>(map)?;
+                    }
+                }
+                DataType::Number(schema) => {
+                    map.serialize_value("number")?;
+                    if schema.is_some() {
+                        map = schema.as_ref().unwrap().serialize_to_map::<S>(map)?;
+                    }
+                }
+                DataType::Integer(schema) => {
+                    map.serialize_value("integer")?;
+                    if schema.is_some() {
+                        map = schema.as_ref().unwrap().serialize_to_map::<S>(map)?;
+                    }
+                }
+                DataType::Boolean => {
+                    map.serialize_value("boolean")?;
+                }
+                DataType::Null => {
+                    map.serialize_value("null")?;
+                }
+            }
+        }
 
         Ok(map)
     }
 }
 
-#[derive(Serialize, Debug)]
-pub enum DataType {
-    #[serde(rename = "object")]
-    Object,
-    #[serde(rename = "array")]
-    Array,
-    #[serde(rename = "string")]
-    String,
-    #[serde(rename = "number")]
-    Number,
-    #[serde(rename = "integer")]
-    Integer,
-    #[serde(rename = "boolean")]
+#[derive(Debug)]
+pub enum DataType<'a> {
+    Object(Option<ObjectSchema<'a>>),
+    Array(Option<ArraySchema<'a>>),
+    String(Option<StringSchema<'a>>),
+    Number(Option<NumberSchema>),
+    Integer(Option<IntegerSchema>),
     Boolean,
-    #[serde(rename = "null")]
     Null,
 }
 
