@@ -29,7 +29,7 @@
 //! serialization can be seen below.
 //!
 //! ```
-//! println!("Replace me with a real example!");
+//! assert!(2 + 2 == 4, "Replace me with a real example!");
 //! ```
 //!
 //! # Usage
