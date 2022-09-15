@@ -10,8 +10,10 @@
  */
 
 pub mod action;
+pub mod additional_expected_response;
 pub mod data_schema;
 pub mod event;
+pub mod expected_response;
 pub mod form;
 pub mod link;
 pub mod property;

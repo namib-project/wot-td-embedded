@@ -41,7 +41,7 @@ impl<'a> DigestSecuritySchemeBuilder<'a> {
         self
     }
 
-    pub fn in_(mut self, r#in: In) -> Self {
+    pub fn r#in(mut self, r#in: In) -> Self {
         self.r#in = Some(r#in);
         self
     }

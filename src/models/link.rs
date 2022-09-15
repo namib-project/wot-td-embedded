@@ -24,7 +24,7 @@ pub struct Link<'a> {
     pub rel: Option<&'a str>,
     pub anchor: Option<&'a str>,
     pub sizes: Option<&'a str>,
-    pub hreflang: Option<&'a Array<'a, &'a str>>,
+    pub hreflang: Option<Array<'a, &'a str>>,
 }
 
 impl<'a> Link<'a> {
@@ -40,7 +40,7 @@ pub struct LinkBuilder<'a> {
     pub rel: Option<&'a str>,
     pub anchor: Option<&'a str>,
     pub sizes: Option<&'a str>,
-    pub hreflang: Option<&'a Array<'a, &'a str>>,
+    pub hreflang: Option<Array<'a, &'a str>>,
 }
 
 impl<'a> LinkBuilder<'a> {
@@ -71,7 +71,7 @@ impl<'a> LinkBuilder<'a> {
         self
     }
 
-    pub fn hreflang(mut self, hreflang: &'a Array<'a, &'a str>) -> LinkBuilder<'a> {
+    pub fn hreflang(mut self, hreflang: Array<'a, &'a str>) -> LinkBuilder<'a> {
         self.hreflang = Some(hreflang);
         self
     }
