@@ -6,12 +6,13 @@ use crate::{
     serialize_field,
 };
 
-use super::common::CommonFields;
-
 #[derive(Debug)]
 pub struct DataSchema<'a> {
     pub json_ld_type: Option<Array<'a, &'a str>>,
-    pub common_fields: Option<CommonFields<'a>>,
+    pub title: Option<&'a str>,
+    pub titles: Option<&'a Map<'a, &'a str>>,
+    pub description: Option<&'a str>,
+    pub descriptions: Option<&'a Map<'a, &'a str>>,
     pub constant: Option<DataStructure<'a>>,
     pub default: Option<DataStructure<'a>>,
     pub unit: Option<&'a str>,
@@ -28,15 +29,11 @@ impl<'a> DataSchema<'a> {
     where
         S: serde::Serializer,
     {
-        if self.common_fields.is_some() {
-            let common_fields = self.common_fields.as_ref().unwrap();
-            serialize_field!("title", common_fields.title, map);
-            serialize_field!("titles", common_fields.titles, map);
-            serialize_field!("description", common_fields.description, map);
-            serialize_field!("descriptions", common_fields.descriptions, map);
-        }
-
         serialize_field!("@type", &self.json_ld_type, map);
+        serialize_field!("title", &self.title, map);
+        serialize_field!("titles", &self.titles, map);
+        serialize_field!("description", &self.description, map);
+        serialize_field!("descriptions", &self.descriptions, map);
         serialize_field!("constant", &self.constant, map);
         serialize_field!("default", &self.default, map);
         serialize_field!("unit", &self.unit, map);

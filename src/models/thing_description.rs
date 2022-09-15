@@ -1,20 +1,21 @@
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 
-use crate::data_structures::{array::Array, map::Map};
+use crate::{
+    constants::WOT_TD_11_CONTEXT,
+    data_structures::{array::Array, map::Map},
+};
 
 use super::{
     action::Action, data_schema::DataSchema, event::Event, form::Form, link::Link,
     property::Property, security_definition::SecurityScheme,
 };
 
-pub const WOT_TD_11_CONTEXT: &str = "https://www.w3.org/2022/wot/td/v1.1";
-
 #[derive(Serialize, Debug)]
 #[serde(untagged)]
 pub enum ContextEntry<'a> {
     StringEntry(&'a str),
-    MapEntry(&'a str, &'a str),
+    MapEntry(Map<'a, &'a str>),
 }
 
 impl<'a> Default for ContextEntry<'a> {
@@ -28,7 +29,7 @@ impl<'a> Default for ContextEntry<'a> {
 #[serde(rename_all = "camelCase")]
 pub struct ThingDescription<'a> {
     #[serde(rename = "@context")]
-    pub context: Option<Array<'a, ContextEntry<'a>>>,
+    pub context: Array<'a, ContextEntry<'a>>,
     #[serde(rename = "@type")]
     pub json_ld_type: Option<Array<'a, &'a str>>,
     pub id: Option<&'a str>,
@@ -61,7 +62,7 @@ impl<'a> ThingDescription<'a> {
 
 #[derive(Debug)]
 pub struct ThingDescriptionBuilder<'a> {
-    pub context: Option<Array<'a, ContextEntry<'a>>>,
+    pub context: Array<'a, ContextEntry<'a>>,
     pub json_ld_type: Option<Array<'a, &'a str>>,
     pub id: Option<&'a str>,
     pub title: &'a str,
@@ -87,7 +88,7 @@ pub struct ThingDescriptionBuilder<'a> {
 
 impl<'a> ThingDescriptionBuilder<'a> {
     fn default() -> Self {
-        let context = Some(Array::new(ContextEntry::default()));
+        let context = Array::new(ContextEntry::default());
 
         Self {
             context,
@@ -117,7 +118,7 @@ impl<'a> ThingDescriptionBuilder<'a> {
 
 impl<'a> ThingDescriptionBuilder<'a> {
     pub fn new(title: &'a str) -> ThingDescriptionBuilder<'a> {
-        let context = Some(Array::new(ContextEntry::default()));
+        let context = Array::new(ContextEntry::default());
         ThingDescriptionBuilder {
             title,
             titles: None,
@@ -141,6 +142,11 @@ impl<'a> ThingDescriptionBuilder<'a> {
             uri_variables: None,
             security_definitions: None,
         }
+    }
+
+    pub fn context(mut self, context: Array<'a, ContextEntry<'a>>) -> ThingDescriptionBuilder<'a> {
+        self.context = context;
+        self
     }
 
     pub fn title(mut self, title: &'a str) -> ThingDescriptionBuilder<'a> {
@@ -226,18 +232,17 @@ mod tests {
 
     use crate::{
         data_structures::{
-            array::Array,
+            array::{Array, ArrayEntry},
             map::{Map, MapEntry},
         },
         models::{
             action::{Action, ActionBuilder},
-            common::CommonFields,
             data_schema::{DataSchema, DataType},
             form::{Form, FormBuilder, OperationType},
             link::Link,
             property::{Property, PropertyBuilder},
             security_definition::{SecurityScheme, SecuritySchemeType},
-            thing_description::ThingDescription,
+            thing_description::{ContextEntry, ThingDescription},
         },
     };
     use serde_json_core::{heapless::String, ser::Error, to_string};
@@ -246,7 +251,10 @@ mod tests {
     fn serialize_thing_description() -> Result<(), Error> {
         let action_input = DataSchema {
             json_ld_type: None,
-            common_fields: Some(CommonFields::builder().title("Toggle Data").build()),
+            title: Some("Toggle Data"),
+            titles: None,
+            description: None,
+            descriptions: None,
             constant: None,
             default: None,
             unit: None,
@@ -302,7 +310,10 @@ mod tests {
                 Array::<Form>::new(FormBuilder::new("coaps://example.org/status").build()),
                 DataSchema {
                     json_ld_type: None,
-                    common_fields: Some(CommonFields::builder().title("Status").build()),
+                    title: Some("Status"),
+                    titles: None,
+                    description: None,
+                    descriptions: None,
                     constant: None,
                     default: None,
                     unit: None,
@@ -319,7 +330,14 @@ mod tests {
 
         let mut properties = Map::<Property>::new().insert(&mut first_property);
 
+        let mut coap_context = MapEntry::new("cov", "http://www.example.org/coap-binding#");
+        let context_entries = Map::<&str>::new().insert(&mut coap_context);
+        let mut context_map = ArrayEntry::new(ContextEntry::MapEntry(context_entries));
+        let context =
+            Array::<ContextEntry>::new(ContextEntry::default()).add_entry(&mut context_map);
+
         let thing_description = ThingDescription::builder()
+            .context(context)
             .title("Test TD")
             .json_ld_type(json_ld_type)
             .actions(&mut actions)
@@ -329,7 +347,7 @@ mod tests {
             .properties(&mut properties)
             .build();
 
-        let expected_result = r#"{"@context":["https://www.w3.org/2022/wot/td/v1.1"],"@type":["saref:LightSwitch"],"title":"Test TD","properties":{"status":{"forms":[{"href":"coaps://example.org/status"}],"title":"Status","type":"boolean"}},"actions":{"toggle":{"forms":[{"href":"coaps://example.org/toggle","op":["invokeaction"]}],"input":{"title":"Toggle Data"}},"toggle2":{"forms":[{"href":"coaps://example.org/toggle2"}]}},"links":[{"href":"https://example.org"}],"security":["nosec_sc"],"securityDefinitions":{"nosec_sc":{"scheme":"nosec"}}}"#;
+        let expected_result = r#"{"@context":["https://www.w3.org/2022/wot/td/v1.1",{"cov":"http://www.example.org/coap-binding#"}],"@type":["saref:LightSwitch"],"title":"Test TD","properties":{"status":{"forms":[{"href":"coaps://example.org/status"}],"title":"Status","type":"boolean"}},"actions":{"toggle":{"forms":[{"href":"coaps://example.org/toggle","op":["invokeaction"]}],"input":{"title":"Toggle Data"}},"toggle2":{"forms":[{"href":"coaps://example.org/toggle2"}]}},"links":[{"href":"https://example.org"}],"security":["nosec_sc"],"securityDefinitions":{"nosec_sc":{"scheme":"nosec"}}}"#;
         let actual_result: String<600> = to_string(&thing_description)?;
 
         assert_eq!(expected_result, actual_result.as_str());
