@@ -298,7 +298,10 @@ mod tests {
         let mut no_security = MapEntry::new(
             NO_SEC_KEY,
             SecurityScheme {
+                json_ld_type: None,
                 description: None,
+                descriptions: None,
+                proxy: None,
                 scheme: SecuritySchemeType::Nosec,
             },
         );
