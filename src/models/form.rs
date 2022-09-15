@@ -29,6 +29,12 @@ pub struct Form<'a> {
     // TODO: Add additionalResponses
 }
 
+impl<'a> Form<'a> {
+    pub fn builder(href: &'a str) -> FormBuilder<'a> {
+        FormBuilder::new(href)
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct FormBuilder<'a> {
     pub href: &'a str,

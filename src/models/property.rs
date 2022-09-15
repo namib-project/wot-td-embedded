@@ -23,8 +23,8 @@ pub struct Property<'a> {
 }
 
 impl<'a> Property<'a> {
-    pub fn builder() -> PropertyBuilder<'a> {
-        todo!()
+    pub fn builder(forms: Array<'a, Form<'a>>, data_schema: DataSchema<'a>) -> PropertyBuilder<'a> {
+        PropertyBuilder::new(forms, data_schema)
     }
 }
 

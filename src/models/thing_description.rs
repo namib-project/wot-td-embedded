@@ -279,7 +279,7 @@ mod tests {
             event::Event,
             form::{Form, FormBuilder, OperationType},
             link::Link,
-            property::{Property, PropertyBuilder},
+            property::Property,
             security_definition::{SecurityScheme, SecuritySchemeType},
             thing_description::{ContextEntry, ThingDescription},
         },
@@ -291,7 +291,7 @@ mod tests {
         let mut first_action = MapEntry::<Action>::new(
             "toggle",
             ActionBuilder::new(Array::<Form>::new(
-                FormBuilder::new("coaps://example.org/toggle")
+                Form::builder("coaps://example.org/toggle")
                     .op(Array::<OperationType>::new(OperationType::Invokeaction))
                     .build(),
             ))
@@ -325,7 +325,7 @@ mod tests {
 
         let mut first_property = MapEntry::<Property>::new(
             "status",
-            PropertyBuilder::new(
+            Property::builder(
                 Array::<Form>::new(FormBuilder::new("coaps://example.org/status").build()),
                 DataSchema::builder()
                     .title("Status")

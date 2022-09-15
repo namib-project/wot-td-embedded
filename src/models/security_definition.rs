@@ -214,7 +214,9 @@ impl<'a> Serialize for SecurityScheme<'a> {
                 serialize_field!("ace:scopes", &security.scopes, map);
                 serialize_field!("ace:cnonce", &security.cnonce, map);
             }
-            _ => todo!(),
+            SecuritySchemeType::Combo => {
+                todo!()
+            }
         };
 
         serialize_field!("@type", self.json_ld_type, map);
