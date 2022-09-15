@@ -28,7 +28,7 @@ use crate::{
 use self::{
     ace::AceSecurityScheme, api_key::ApiKeySecurityScheme, basic::BasicSecurityScheme,
     bearer::BearerSecurityScheme, combo::ComboSecurityScheme, combo::ComboVariant,
-    digest::DigestSecuritySchmeme, oauth2::Oauth2SecurityScheme, psk::PskSecurityScheme,
+    digest::DigestSecurityScheme, oauth2::Oauth2SecurityScheme, psk::PskSecurityScheme,
 };
 
 // TODO: Add possibility to define additional fields
@@ -105,7 +105,7 @@ pub enum SecuritySchemeType<'a> {
     Auto,
     Combo(ComboSecurityScheme<'a>),
     Basic(BasicSecurityScheme<'a>),
-    Digest(DigestSecuritySchmeme<'a>),
+    Digest(DigestSecurityScheme<'a>),
     Apikey(ApiKeySecurityScheme<'a>),
     Bearer(BearerSecurityScheme<'a>),
     Psk(PskSecurityScheme<'a>),
@@ -132,18 +132,18 @@ impl<'a> Serialize for SecurityScheme<'a> {
             SecuritySchemeType::Basic(security) => {
                 map.serialize_value("basic")?;
                 serialize_field!("name", &security.name, map);
-                serialize_field!("in", &security.in_, map);
+                serialize_field!("in", &security.r#in, map);
             }
             SecuritySchemeType::Digest(security) => {
                 map.serialize_value("digest")?;
                 serialize_field!("name", &security.name, map);
-                serialize_field!("in", &security.in_, map);
+                serialize_field!("in", &security.r#in, map);
                 serialize_field!("in", &security.qop, map);
             }
             SecuritySchemeType::Apikey(security) => {
                 map.serialize_value("apikey")?;
                 serialize_field!("name", &security.name, map);
-                serialize_field!("in", &security.in_, map);
+                serialize_field!("in", &security.r#in, map);
             }
             SecuritySchemeType::Bearer(security) => {
                 map.serialize_value("bearer")?;
@@ -151,7 +151,7 @@ impl<'a> Serialize for SecurityScheme<'a> {
                 serialize_field!("name", &security.name, map);
                 serialize_field!("alg", &security.alg, map);
                 serialize_field!("format", &security.format, map);
-                serialize_field!("in", &security.in_, map);
+                serialize_field!("in", &security.r#in, map);
             }
             SecuritySchemeType::Psk(security) => {
                 map.serialize_value("psk")?;

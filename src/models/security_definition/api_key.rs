@@ -11,10 +11,43 @@
 
 use super::In;
 
-// TODO: Add builder pattern
-
 #[derive(Debug)]
 pub struct ApiKeySecurityScheme<'a> {
     pub name: Option<&'a str>,
-    pub in_: Option<In>,
+    pub r#in: Option<In>,
+}
+
+impl<'a> ApiKeySecurityScheme<'a> {
+    pub fn builder() -> ApiKeySecuritySchemeBuilder<'a> {
+        ApiKeySecuritySchemeBuilder::default()
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct ApiKeySecuritySchemeBuilder<'a> {
+    pub name: Option<&'a str>,
+    pub r#in: Option<In>,
+}
+
+impl<'a> ApiKeySecuritySchemeBuilder<'a> {
+    pub fn new() -> Self {
+        ApiKeySecuritySchemeBuilder::default()
+    }
+
+    pub fn name(mut self, name: &'a str) -> Self {
+        self.name = Some(name);
+        self
+    }
+
+    pub fn r#in(mut self, r#in: In) -> Self {
+        self.r#in = Some(r#in);
+        self
+    }
+
+    pub fn build(self) -> ApiKeySecurityScheme<'a> {
+        ApiKeySecurityScheme {
+            name: self.name,
+            r#in: self.r#in,
+        }
+    }
 }

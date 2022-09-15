@@ -11,9 +11,51 @@
 
 use super::{In, QoP};
 
-#[derive(Debug)]
-pub struct DigestSecuritySchmeme<'a> {
+#[derive(Debug, Default)]
+pub struct DigestSecurityScheme<'a> {
     pub name: Option<&'a str>,
-    pub in_: Option<In>,
+    pub r#in: Option<In>,
     pub qop: Option<QoP>,
+}
+
+impl<'a> DigestSecurityScheme<'a> {
+    pub fn builder() -> DigestSecuritySchemeBuilder<'a> {
+        DigestSecuritySchemeBuilder::default()
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct DigestSecuritySchemeBuilder<'a> {
+    pub name: Option<&'a str>,
+    pub r#in: Option<In>,
+    pub qop: Option<QoP>,
+}
+
+impl<'a> DigestSecuritySchemeBuilder<'a> {
+    pub fn new() -> Self {
+        DigestSecuritySchemeBuilder::default()
+    }
+
+    pub fn name(mut self, name: &'a str) -> Self {
+        self.name = Some(name);
+        self
+    }
+
+    pub fn in_(mut self, r#in: In) -> Self {
+        self.r#in = Some(r#in);
+        self
+    }
+
+    pub fn qop(mut self, qop: QoP) -> Self {
+        self.qop = Some(qop);
+        self
+    }
+
+    pub fn build(self) -> DigestSecurityScheme<'a> {
+        DigestSecurityScheme {
+            name: self.name,
+            r#in: self.r#in,
+            qop: self.qop,
+        }
+    }
 }

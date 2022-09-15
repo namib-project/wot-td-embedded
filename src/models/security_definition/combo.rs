@@ -16,6 +16,12 @@ pub struct ComboSecurityScheme<'a> {
     pub combo_variant: ComboVariant<'a>,
 }
 
+impl<'a> ComboSecurityScheme<'a> {
+    pub fn new(combo_variant: ComboVariant<'a>) -> ComboSecurityScheme<'a> {
+        ComboSecurityScheme { combo_variant }
+    }
+}
+
 #[derive(Debug)]
 pub enum ComboVariant<'a> {
     AllOf(Array<'a, &'a str>),

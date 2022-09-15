@@ -11,12 +11,58 @@
 
 use crate::data_structures::array::Array;
 
-// TODO: Add builder pattern
-
 #[derive(Debug)]
 pub struct AceSecurityScheme<'a> {
     pub authorization_server: Option<&'a str>,
     pub audience: Option<&'a str>,
     pub scopes: Option<Array<'a, &'a str>>,
     pub cnonce: Option<bool>,
+}
+
+impl<'a> AceSecurityScheme<'a> {
+    pub fn builder() -> AceSecuritySchemeBuilder<'a> {
+        AceSecuritySchemeBuilder::new()
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct AceSecuritySchemeBuilder<'a> {
+    pub authorization_server: Option<&'a str>,
+    pub audience: Option<&'a str>,
+    pub scopes: Option<Array<'a, &'a str>>,
+    pub cnonce: Option<bool>,
+}
+
+impl<'a> AceSecuritySchemeBuilder<'a> {
+    pub fn new() -> Self {
+        AceSecuritySchemeBuilder::default()
+    }
+
+    pub fn authorization_server(mut self, authorization_server: &'a str) -> Self {
+        self.authorization_server = Some(authorization_server);
+        self
+    }
+
+    pub fn audience(mut self, audience: &'a str) -> Self {
+        self.audience = Some(audience);
+        self
+    }
+    pub fn scopes(mut self, scopes: Array<'a, &'a str>) -> Self {
+        self.scopes = Some(scopes);
+        self
+    }
+
+    pub fn cnonce(mut self, cnonce: bool) -> Self {
+        self.cnonce = Some(cnonce);
+        self
+    }
+
+    pub fn build(self) -> AceSecurityScheme<'a> {
+        AceSecurityScheme {
+            authorization_server: self.authorization_server,
+            audience: self.audience,
+            scopes: self.scopes,
+            cnonce: self.cnonce,
+        }
+    }
 }

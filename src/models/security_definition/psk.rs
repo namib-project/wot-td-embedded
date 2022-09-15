@@ -13,3 +13,31 @@
 pub struct PskSecurityScheme<'a> {
     pub identity: Option<&'a str>,
 }
+
+impl<'a> PskSecurityScheme<'a> {
+    pub fn builder() -> PskSecuritySchemeBuilder<'a> {
+        PskSecuritySchemeBuilder::default()
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct PskSecuritySchemeBuilder<'a> {
+    pub identity: Option<&'a str>,
+}
+
+impl<'a> PskSecuritySchemeBuilder<'a> {
+    pub fn new() -> Self {
+        PskSecuritySchemeBuilder::default()
+    }
+
+    pub fn authorization(mut self, identity: &'a str) -> Self {
+        self.identity = Some(identity);
+        self
+    }
+
+    pub fn build(self) -> PskSecurityScheme<'a> {
+        PskSecurityScheme {
+            identity: self.identity,
+        }
+    }
+}
