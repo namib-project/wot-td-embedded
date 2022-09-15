@@ -287,22 +287,7 @@ mod tests {
 
     #[test]
     fn serialize_thing_description() -> Result<(), Error> {
-        let action_input = DataSchema {
-            json_ld_type: None,
-            title: Some("Toggle Data"),
-            titles: None,
-            description: None,
-            descriptions: None,
-            constant: None,
-            default: None,
-            unit: None,
-            one_of: None,
-            enumeration: None,
-            read_only: None,
-            write_only: None,
-            format: None,
-            data_type: None,
-        };
+        let action_input = DataSchema::builder().title("Toggle Data").build();
 
         let mut first_action = MapEntry::<Action>::new(
             "toggle",
@@ -349,22 +334,10 @@ mod tests {
             "status",
             PropertyBuilder::new(
                 Array::<Form>::new(FormBuilder::new("coaps://example.org/status").build()),
-                DataSchema {
-                    json_ld_type: None,
-                    title: Some("Status"),
-                    titles: None,
-                    description: None,
-                    descriptions: None,
-                    constant: None,
-                    default: None,
-                    unit: None,
-                    one_of: None,
-                    enumeration: None,
-                    read_only: None,
-                    write_only: None,
-                    format: None,
-                    data_type: Some(DataType::Boolean),
-                },
+                DataSchema::builder()
+                    .title("Status")
+                    .data_type(DataType::Boolean)
+                    .build(),
             )
             .build(),
         );
@@ -389,7 +362,7 @@ mod tests {
             .properties(&mut properties)
             .build();
 
-        let expected_result = r#"{"@context":["https://www.w3.org/2022/wot/td/v1.1",{"cov":"http://www.example.org/coap-binding#"}],"@type":["saref:LightSwitch"],"title":"Test TD","properties":{"status":{"forms":[{"href":"coaps://example.org/status"}],"title":"Status","type":"boolean"}},"actions":{"toggle":{"forms":[{"href":"coaps://example.org/toggle","op":["invokeaction"]}],"input":{"title":"Toggle Data"}},"toggle2":{"forms":[{"href":"coaps://example.org/toggle2"}]}},"links":[{"href":"https://example.org"}],"security":["nosec_sc"],"securityDefinitions":{"nosec_sc":{"scheme":"nosec"}}}"#;
+        let expected_result = r#"{"@context":["https://www.w3.org/2022/wot/td/v1.1",{"cov":"http://www.example.org/coap-binding#"}],"@type":["saref:LightSwitch"],"title":"Test TD","description":"Description for the Test TD","properties":{"status":{"forms":[{"href":"coaps://example.org/status"}],"title":"Status","type":"boolean"}},"actions":{"toggle":{"forms":[{"href":"coaps://example.org/toggle","op":["invokeaction"]}],"input":{"title":"Toggle Data"}},"toggle2":{"forms":[{"href":"coaps://example.org/toggle2"}]}},"links":[{"href":"https://example.org"}],"security":["nosec_sc"],"securityDefinitions":{"nosec_sc":{"scheme":"nosec"}}}"#;
         let actual_result: String<650> = to_string(&thing_description)?;
 
         assert_eq!(expected_result, actual_result.as_str());

@@ -35,6 +35,14 @@ pub struct DataSchema<'a> {
     pub data_type: Option<DataType>,
 }
 
+impl<'a> DataSchema<'a> {
+    pub fn builder() -> DataSchemaBuilder<'a> {
+        DataSchemaBuilder {
+            ..Default::default()
+        }
+    }
+}
+
 impl<'a> Serialize for DataSchema<'a> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
