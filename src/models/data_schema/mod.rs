@@ -75,7 +75,6 @@ impl<'a> Serialize for DataSchema<'a> {
 
 #[derive(Debug, Default)]
 pub struct DataSchemaBuilder<'a> {
-    // TODO: Add specific data types
     pub json_ld_type: Option<Array<'a, &'a str>>,
     pub title: Option<&'a str>,
     pub titles: Option<&'a Map<'a, &'a str>>,

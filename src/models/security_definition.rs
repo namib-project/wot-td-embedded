@@ -87,7 +87,7 @@ impl<'a> SecuritySchemeBuilder<'a> {
 #[derive(Debug)]
 pub enum SecuritySchemeType<'a> {
     Nosec,
-    Combo,
+    Combo(ComboSecurityScheme<'a>),
     Basic(BasicSecurityScheme<'a>),
     Digest(DigestSecuritySchmeme<'a>),
     Apikey(ApiKeySecurityScheme<'a>),
@@ -96,6 +96,17 @@ pub enum SecuritySchemeType<'a> {
     Oauth2(Oauth2SecurityScheme<'a>),
     Auto,
     Ace(AceSecurityScheme<'a>),
+}
+
+#[derive(Debug)]
+pub struct ComboSecurityScheme<'a> {
+    pub combo_variant: ComboVariant<'a>,
+}
+
+#[derive(Debug)]
+pub enum ComboVariant<'a> {
+    AllOf(Array<'a, &'a str>),
+    OneOf(Array<'a, &'a str>),
 }
 
 #[derive(Debug)]
@@ -214,8 +225,12 @@ impl<'a> Serialize for SecurityScheme<'a> {
                 serialize_field!("ace:scopes", &security.scopes, map);
                 serialize_field!("ace:cnonce", &security.cnonce, map);
             }
-            SecuritySchemeType::Combo => {
-                todo!()
+            SecuritySchemeType::Combo(security) => {
+                map.serialize_value("combo")?;
+                match &security.combo_variant {
+                    ComboVariant::OneOf(one_of) => map.serialize_entry("oneOf", &one_of)?,
+                    ComboVariant::AllOf(all_of) => map.serialize_entry("allOf", &all_of)?,
+                }
             }
         };
 
