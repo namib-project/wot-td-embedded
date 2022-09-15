@@ -55,7 +55,7 @@ pub struct ThingDescription<'a> {
     pub base: Option<&'a str>,
     pub properties: Option<&'a Map<'a, Property<'a>>>,
     pub actions: Option<&'a mut Map<'a, Action<'a>>>,
-    pub events: Option<Map<'a, Event<'a>>>,
+    pub events: Option<&'a mut Map<'a, Event<'a>>>,
     pub links: Option<Array<'a, Link<'a>>>,
     pub forms: Option<Array<'a, Form<'a>>>,
     pub security: Option<Array<'a, &'a str>>,
@@ -87,7 +87,7 @@ pub struct ThingDescriptionBuilder<'a> {
     pub base: Option<&'a str>,
     pub properties: Option<&'a Map<'a, Property<'a>>>,
     pub actions: Option<&'a mut Map<'a, Action<'a>>>,
-    pub events: Option<Map<'a, Event<'a>>>,
+    pub events: Option<&'a mut Map<'a, Event<'a>>>,
     pub links: Option<Array<'a, Link<'a>>>,
     pub forms: Option<Array<'a, Form<'a>>>,
     pub security: Option<Array<'a, &'a str>>,
@@ -196,7 +196,7 @@ impl<'a> ThingDescriptionBuilder<'a> {
         self
     }
 
-    pub fn events(mut self, events: Map<'a, Event<'a>>) -> ThingDescriptionBuilder<'a> {
+    pub fn events(mut self, events: &'a mut Map<'a, Event<'a>>) -> ThingDescriptionBuilder<'a> {
         self.events = Some(events);
         self
     }
@@ -276,6 +276,7 @@ mod tests {
         models::{
             action::{Action, ActionBuilder},
             data_schema::{DataSchema, DataType},
+            event::Event,
             form::{Form, FormBuilder, OperationType},
             link::Link,
             property::{Property, PropertyBuilder},
@@ -287,8 +288,6 @@ mod tests {
 
     #[test]
     fn serialize_thing_description() -> Result<(), Error> {
-        let action_input = DataSchema::builder().title("Toggle Data").build();
-
         let mut first_action = MapEntry::<Action>::new(
             "toggle",
             ActionBuilder::new(Array::<Form>::new(
@@ -296,7 +295,7 @@ mod tests {
                     .op(Array::<OperationType>::new(OperationType::Invokeaction))
                     .build(),
             ))
-            .input(&action_input)
+            .input(DataSchema::builder().title("Toggle Data").build())
             .build(),
         );
 
@@ -320,13 +319,7 @@ mod tests {
 
         let mut no_security = MapEntry::new(
             NO_SEC_KEY,
-            SecurityScheme {
-                json_ld_type: None,
-                description: None,
-                descriptions: None,
-                proxy: None,
-                scheme: SecuritySchemeType::Nosec,
-            },
+            SecurityScheme::builder(SecuritySchemeType::Nosec).build(),
         );
         let mut security_definitions = Map::<SecurityScheme>::new().insert(&mut no_security);
 
@@ -350,20 +343,32 @@ mod tests {
         let context =
             Array::<ContextEntry>::new(ContextEntry::default()).add_entry(&mut context_map);
 
+        let mut first_event = MapEntry::<Event>::new(
+            "overheating",
+            Event::builder(Array::<Form>::new(
+                FormBuilder::new("coaps://example.org/overheating").build(),
+            ))
+            .data(DataSchema::builder().data_type(DataType::Integer).build())
+            .build(),
+        );
+
+        let mut events = Map::<Event>::new().insert(&mut first_event);
+
         let thing_description = ThingDescription::builder()
             .context(context)
             .title("Test TD")
             .description("Description for the Test TD")
             .json_ld_type(json_ld_type)
+            .properties(&mut properties)
             .actions(&mut actions)
+            .events(&mut events)
             .links(links)
             .security(security)
             .security_definitions(&mut security_definitions)
-            .properties(&mut properties)
             .build();
 
-        let expected_result = r#"{"@context":["https://www.w3.org/2022/wot/td/v1.1",{"cov":"http://www.example.org/coap-binding#"}],"@type":["saref:LightSwitch"],"title":"Test TD","description":"Description for the Test TD","properties":{"status":{"forms":[{"href":"coaps://example.org/status"}],"title":"Status","type":"boolean"}},"actions":{"toggle":{"forms":[{"href":"coaps://example.org/toggle","op":["invokeaction"]}],"input":{"title":"Toggle Data"}},"toggle2":{"forms":[{"href":"coaps://example.org/toggle2"}]}},"links":[{"href":"https://example.org"}],"security":["nosec_sc"],"securityDefinitions":{"nosec_sc":{"scheme":"nosec"}}}"#;
-        let actual_result: String<650> = to_string(&thing_description)?;
+        let expected_result = r#"{"@context":["https://www.w3.org/2022/wot/td/v1.1",{"cov":"http://www.example.org/coap-binding#"}],"@type":["saref:LightSwitch"],"title":"Test TD","description":"Description for the Test TD","properties":{"status":{"forms":[{"href":"coaps://example.org/status"}],"title":"Status","type":"boolean"}},"actions":{"toggle":{"forms":[{"href":"coaps://example.org/toggle","op":["invokeaction"]}],"input":{"title":"Toggle Data"}},"toggle2":{"forms":[{"href":"coaps://example.org/toggle2"}]}},"events":{"overheating":{"forms":[{"href":"coaps://example.org/overheating"}],"data":{"type":"integer"}}},"links":[{"href":"https://example.org"}],"security":["nosec_sc"],"securityDefinitions":{"nosec_sc":{"scheme":"nosec"}}}"#;
+        let actual_result: String<800> = to_string(&thing_description)?;
 
         assert_eq!(expected_result, actual_result.as_str());
         Ok(())

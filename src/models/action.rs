@@ -27,16 +27,16 @@ pub struct Action<'a> {
     pub titles: Option<&'a Map<'a, &'a str>>,
     pub description: Option<&'a str>,
     pub descriptions: Option<&'a Map<'a, &'a str>>,
-    pub input: Option<&'a DataSchema<'a>>,
-    pub output: Option<&'a DataSchema<'a>>,
+    pub input: Option<DataSchema<'a>>,
+    pub output: Option<DataSchema<'a>>,
     pub safe: Option<bool>,
     pub idempotent: Option<bool>,
     pub synchronous: Option<bool>,
 }
 
 impl<'a> Action<'a> {
-    pub fn builder() -> ActionBuilder<'a> {
-        todo!()
+    pub fn builder(forms: Array<'a, Form<'a>>) -> ActionBuilder<'a> {
+        ActionBuilder::new(forms)
     }
 }
 
@@ -49,8 +49,8 @@ pub struct ActionBuilder<'a> {
     pub titles: Option<&'a Map<'a, &'a str>>,
     pub description: Option<&'a str>,
     pub descriptions: Option<&'a Map<'a, &'a str>>,
-    pub input: Option<&'a DataSchema<'a>>,
-    pub output: Option<&'a DataSchema<'a>>,
+    pub input: Option<DataSchema<'a>>,
+    pub output: Option<DataSchema<'a>>,
     pub safe: Option<bool>,
     pub idempotent: Option<bool>,
     pub synchronous: Option<bool>,
@@ -98,12 +98,12 @@ impl<'a> ActionBuilder<'a> {
         self
     }
 
-    pub fn input(mut self, input: &'a DataSchema<'a>) -> ActionBuilder<'a> {
+    pub fn input(mut self, input: DataSchema<'a>) -> ActionBuilder<'a> {
         self.input = Some(input);
         self
     }
 
-    pub fn output(mut self, output: &'a DataSchema<'a>) -> ActionBuilder<'a> {
+    pub fn output(mut self, output: DataSchema<'a>) -> ActionBuilder<'a> {
         self.output = Some(output);
         self
     }

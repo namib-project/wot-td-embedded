@@ -26,15 +26,15 @@ pub struct Event<'a> {
     pub titles: Option<&'a Map<'a, &'a str>>,
     pub description: Option<&'a str>,
     pub descriptions: Option<&'a Map<'a, &'a str>>,
-    pub subscription: Option<&'a DataSchema<'a>>,
-    pub data: Option<&'a DataSchema<'a>>,
-    pub data_response: Option<&'a DataSchema<'a>>,
-    pub cancellation: Option<&'a DataSchema<'a>>,
+    pub subscription: Option<DataSchema<'a>>,
+    pub data: Option<DataSchema<'a>>,
+    pub data_response: Option<DataSchema<'a>>,
+    pub cancellation: Option<DataSchema<'a>>,
 }
 
 impl<'a> Event<'a> {
-    pub fn builder() -> EventBuilder<'a> {
-        todo!()
+    pub fn builder(forms: Array<'a, Form<'a>>) -> EventBuilder<'a> {
+        EventBuilder::new(forms)
     }
 }
 
@@ -46,10 +46,10 @@ pub struct EventBuilder<'a> {
     pub titles: Option<&'a Map<'a, &'a str>>,
     pub description: Option<&'a str>,
     pub descriptions: Option<&'a Map<'a, &'a str>>,
-    pub subscription: Option<&'a DataSchema<'a>>,
-    pub data: Option<&'a DataSchema<'a>>,
-    pub data_response: Option<&'a DataSchema<'a>>,
-    pub cancellation: Option<&'a DataSchema<'a>>,
+    pub subscription: Option<DataSchema<'a>>,
+    pub data: Option<DataSchema<'a>>,
+    pub data_response: Option<DataSchema<'a>>,
+    pub cancellation: Option<DataSchema<'a>>,
 }
 
 impl<'a> EventBuilder<'a> {
@@ -68,22 +68,22 @@ impl<'a> EventBuilder<'a> {
         }
     }
 
-    pub fn subscription(mut self, subscription: &'a DataSchema<'a>) -> EventBuilder<'a> {
+    pub fn subscription(mut self, subscription: DataSchema<'a>) -> EventBuilder<'a> {
         self.subscription = Some(subscription);
         self
     }
 
-    pub fn data(mut self, data: &'a DataSchema<'a>) -> EventBuilder<'a> {
+    pub fn data(mut self, data: DataSchema<'a>) -> EventBuilder<'a> {
         self.data = Some(data);
         self
     }
 
-    pub fn data_response(mut self, data_response: &'a DataSchema<'a>) -> EventBuilder<'a> {
+    pub fn data_response(mut self, data_response: DataSchema<'a>) -> EventBuilder<'a> {
         self.data_response = Some(data_response);
         self
     }
 
-    pub fn cancellation(mut self, cancellation: &'a DataSchema<'a>) -> EventBuilder<'a> {
+    pub fn cancellation(mut self, cancellation: DataSchema<'a>) -> EventBuilder<'a> {
         self.cancellation = Some(cancellation);
         self
     }

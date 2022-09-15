@@ -27,6 +27,63 @@ pub struct SecurityScheme<'a> {
     pub scheme: SecuritySchemeType<'a>,
 }
 
+impl<'a> SecurityScheme<'a> {
+    pub fn builder(scheme: SecuritySchemeType<'a>) -> SecuritySchemeBuilder<'a> {
+        SecuritySchemeBuilder::new(scheme)
+    }
+}
+
+#[derive(Debug)]
+pub struct SecuritySchemeBuilder<'a> {
+    pub json_ld_type: Option<Array<'a, &'a str>>,
+    pub description: Option<&'a str>,
+    pub descriptions: Option<&'a Map<'a, &'a str>>,
+    pub proxy: Option<&'a str>,
+    pub scheme: SecuritySchemeType<'a>,
+}
+
+impl<'a> SecuritySchemeBuilder<'a> {
+    pub fn new(scheme: SecuritySchemeType<'a>) -> Self {
+        Self {
+            scheme,
+            json_ld_type: None,
+            description: None,
+            descriptions: None,
+            proxy: None,
+        }
+    }
+
+    pub fn json_ld_type(mut self, json_ld_type: Array<'a, &'a str>) -> Self {
+        self.json_ld_type = Some(json_ld_type);
+        self
+    }
+
+    pub fn description(mut self, description: &'a str) -> Self {
+        self.description = Some(description);
+        self
+    }
+
+    pub fn descriptions(mut self, descriptions: &'a Map<'a, &'a str>) -> Self {
+        self.descriptions = Some(descriptions);
+        self
+    }
+
+    pub fn proxy(mut self, proxy: &'a str) -> Self {
+        self.proxy = Some(proxy);
+        self
+    }
+
+    pub fn build(self) -> SecurityScheme<'a> {
+        SecurityScheme {
+            json_ld_type: self.json_ld_type,
+            description: self.description,
+            descriptions: self.descriptions,
+            proxy: self.proxy,
+            scheme: self.scheme,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum SecuritySchemeType<'a> {
     Nosec,
