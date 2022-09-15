@@ -9,6 +9,15 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
+pub mod ace;
+pub mod api_key;
+pub mod basic;
+pub mod bearer;
+pub mod combo;
+pub mod digest;
+pub mod oauth2;
+pub mod psk;
+
 use serde::{ser::SerializeMap, Serialize};
 
 use crate::{
@@ -16,7 +25,13 @@ use crate::{
     serialize_field,
 };
 
-// TODO: Add builder pattern
+use self::{
+    ace::AceSecurityScheme, api_key::ApiKeySecurityScheme, basic::BasicSecurityScheme,
+    bearer::BearerSecurityScheme, combo::ComboSecurityScheme, combo::ComboVariant,
+    digest::DigestSecuritySchmeme, oauth2::Oauth2SecurityScheme, psk::PskSecurityScheme,
+};
+
+// TODO: Add possibility to define additional fields
 
 #[derive(Debug)]
 pub struct SecurityScheme<'a> {
@@ -87,6 +102,7 @@ impl<'a> SecuritySchemeBuilder<'a> {
 #[derive(Debug)]
 pub enum SecuritySchemeType<'a> {
     Nosec,
+    Auto,
     Combo(ComboSecurityScheme<'a>),
     Basic(BasicSecurityScheme<'a>),
     Digest(DigestSecuritySchmeme<'a>),
@@ -94,70 +110,7 @@ pub enum SecuritySchemeType<'a> {
     Bearer(BearerSecurityScheme<'a>),
     Psk(PskSecurityScheme<'a>),
     Oauth2(Oauth2SecurityScheme<'a>),
-    Auto,
     Ace(AceSecurityScheme<'a>),
-}
-
-#[derive(Debug)]
-pub struct ComboSecurityScheme<'a> {
-    pub combo_variant: ComboVariant<'a>,
-}
-
-#[derive(Debug)]
-pub enum ComboVariant<'a> {
-    AllOf(Array<'a, &'a str>),
-    OneOf(Array<'a, &'a str>),
-}
-
-#[derive(Debug)]
-pub struct BasicSecurityScheme<'a> {
-    pub name: Option<&'a str>,
-    pub in_: Option<In>,
-}
-
-#[derive(Debug)]
-pub struct DigestSecuritySchmeme<'a> {
-    pub name: Option<&'a str>,
-    pub in_: Option<In>,
-    pub qop: Option<QoP>,
-}
-
-#[derive(Debug)]
-pub struct ApiKeySecurityScheme<'a> {
-    pub name: Option<&'a str>,
-    pub in_: Option<In>,
-}
-
-#[derive(Debug)]
-pub struct BearerSecurityScheme<'a> {
-    pub authorization: Option<&'a str>,
-    pub name: Option<&'a str>,
-    pub alg: Option<&'a str>,
-    pub format: Option<&'a str>,
-    pub in_: Option<In>,
-    pub qop: Option<QoP>,
-}
-
-#[derive(Debug)]
-pub struct PskSecurityScheme<'a> {
-    pub identity: Option<&'a str>,
-}
-
-#[derive(Debug)]
-pub struct Oauth2SecurityScheme<'a> {
-    pub flow: &'a str,
-    pub authorization: Option<&'a str>,
-    pub token: Option<&'a str>,
-    pub refresh: Option<&'a str>,
-    pub scopes: Option<Array<'a, &'a str>>,
-}
-
-#[derive(Debug)]
-pub struct AceSecurityScheme<'a> {
-    pub authorization_server: Option<&'a str>,
-    pub audience: Option<&'a str>,
-    pub scopes: Option<Array<'a, &'a str>>,
-    pub cnonce: Option<bool>,
 }
 
 impl<'a> Serialize for SecurityScheme<'a> {
