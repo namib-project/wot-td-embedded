@@ -28,6 +28,14 @@ use self::{
     object_schema::ObjectSchema, string_schema::StringSchema,
 };
 
+macro_rules! serialize_schema {
+    ($schema:expr, $map:expr) => {
+        if $schema.is_some() {
+            $map = $schema.as_ref().unwrap().serialize_to_map::<S>($map)?;
+        }
+    };
+}
+
 #[derive(Debug)]
 pub struct DataSchema<'a> {
     pub json_ld_type: Option<Array<'a, &'a str>>,
@@ -207,34 +215,23 @@ impl<'a> DataSchema<'a> {
             match &self.data_type.as_ref().unwrap() {
                 DataType::Object(schema) => {
                     map.serialize_value("object")?;
-                    // TODO: Replace with macro
-                    if schema.is_some() {
-                        map = schema.as_ref().unwrap().serialize_to_map::<S>(map)?;
-                    }
+                    serialize_schema!(schema, map);
                 }
                 DataType::Array(schema) => {
                     map.serialize_value("array")?;
-                    if schema.is_some() {
-                        map = schema.as_ref().unwrap().serialize_to_map::<S>(map)?;
-                    }
+                    serialize_schema!(schema, map);
                 }
                 DataType::String(schema) => {
                     map.serialize_value("string")?;
-                    if schema.is_some() {
-                        map = schema.as_ref().unwrap().serialize_to_map::<S>(map)?;
-                    }
+                    serialize_schema!(schema, map);
                 }
                 DataType::Number(schema) => {
                     map.serialize_value("number")?;
-                    if schema.is_some() {
-                        map = schema.as_ref().unwrap().serialize_to_map::<S>(map)?;
-                    }
+                    serialize_schema!(schema, map);
                 }
                 DataType::Integer(schema) => {
                     map.serialize_value("integer")?;
-                    if schema.is_some() {
-                        map = schema.as_ref().unwrap().serialize_to_map::<S>(map)?;
-                    }
+                    serialize_schema!(schema, map);
                 }
                 DataType::Boolean => {
                     map.serialize_value("boolean")?;
