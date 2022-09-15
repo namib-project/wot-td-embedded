@@ -148,6 +148,21 @@ impl<'a> ThingDescriptionBuilder<'a> {
         self
     }
 
+    pub fn titles(mut self, titles: Map<'a, &'a str>) -> ThingDescriptionBuilder<'a> {
+        self.titles = Some(titles);
+        self
+    }
+
+    pub fn description(mut self, description: &'a str) -> ThingDescriptionBuilder<'a> {
+        self.description = Some(description);
+        self
+    }
+
+    pub fn descriptions(mut self, descriptions: Map<'a, &'a str>) -> ThingDescriptionBuilder<'a> {
+        self.descriptions = Some(descriptions);
+        self
+    }
+
     pub fn base(mut self, base: &'a str) -> ThingDescriptionBuilder<'a> {
         self.base = Some(base);
         self
@@ -155,6 +170,16 @@ impl<'a> ThingDescriptionBuilder<'a> {
 
     pub fn version(mut self, version: VersionInfo<'a>) -> ThingDescriptionBuilder<'a> {
         self.version = Some(version);
+        self
+    }
+
+    pub fn created(mut self, created: &'a str) -> ThingDescriptionBuilder<'a> {
+        self.created = Some(created);
+        self
+    }
+
+    pub fn modified(mut self, modified: &'a str) -> ThingDescriptionBuilder<'a> {
+        self.modified = Some(modified);
         self
     }
 
@@ -173,6 +198,11 @@ impl<'a> ThingDescriptionBuilder<'a> {
 
     pub fn events(mut self, events: Map<'a, Event<'a>>) -> ThingDescriptionBuilder<'a> {
         self.events = Some(events);
+        self
+    }
+
+    pub fn forms(mut self, forms: Array<'a, Form<'a>>) -> ThingDescriptionBuilder<'a> {
+        self.forms = Some(forms);
         self
     }
 
@@ -196,6 +226,14 @@ impl<'a> ThingDescriptionBuilder<'a> {
         security_definitions: &'a mut Map<'a, SecurityScheme<'a>>,
     ) -> ThingDescriptionBuilder<'a> {
         self.security_definitions = Some(security_definitions);
+        self
+    }
+
+    pub fn uri_variables(
+        mut self,
+        uri_variables: Map<'a, DataSchema<'a>>,
+    ) -> ThingDescriptionBuilder<'a> {
+        self.uri_variables = Some(uri_variables);
         self
     }
 
@@ -342,6 +380,7 @@ mod tests {
         let thing_description = ThingDescription::builder()
             .context(context)
             .title("Test TD")
+            .description("Description for the Test TD")
             .json_ld_type(json_ld_type)
             .actions(&mut actions)
             .links(links)
@@ -351,7 +390,7 @@ mod tests {
             .build();
 
         let expected_result = r#"{"@context":["https://www.w3.org/2022/wot/td/v1.1",{"cov":"http://www.example.org/coap-binding#"}],"@type":["saref:LightSwitch"],"title":"Test TD","properties":{"status":{"forms":[{"href":"coaps://example.org/status"}],"title":"Status","type":"boolean"}},"actions":{"toggle":{"forms":[{"href":"coaps://example.org/toggle","op":["invokeaction"]}],"input":{"title":"Toggle Data"}},"toggle2":{"forms":[{"href":"coaps://example.org/toggle2"}]}},"links":[{"href":"https://example.org"}],"security":["nosec_sc"],"securityDefinitions":{"nosec_sc":{"scheme":"nosec"}}}"#;
-        let actual_result: String<600> = to_string(&thing_description)?;
+        let actual_result: String<650> = to_string(&thing_description)?;
 
         assert_eq!(expected_result, actual_result.as_str());
         Ok(())
