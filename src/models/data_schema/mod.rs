@@ -19,6 +19,7 @@ use serde::{ser::SerializeMap, Serialize};
 use serde_with::skip_serializing_none;
 
 use crate::{
+    constants::JSON_LD_TYPE,
     data_structures::{array::Array, map::Map},
     serialize_field,
 };
@@ -193,7 +194,7 @@ impl<'a> DataSchema<'a> {
     where
         S: serde::Serializer,
     {
-        serialize_field!("@type", &self.json_ld_type, map);
+        serialize_field!(JSON_LD_TYPE, &self.json_ld_type, map);
         serialize_field!("title", &self.title, map);
         serialize_field!("titles", &self.titles, map);
         serialize_field!("description", &self.description, map);

@@ -21,6 +21,7 @@ pub mod psk;
 use serde::{ser::SerializeMap, Serialize};
 
 use crate::{
+    constants::JSON_LD_TYPE,
     data_structures::{array::Array, map::Map},
     serialize_field,
 };
@@ -181,7 +182,7 @@ impl<'a> Serialize for SecurityScheme<'a> {
             }
         };
 
-        serialize_field!("@type", self.json_ld_type, map);
+        serialize_field!(JSON_LD_TYPE, self.json_ld_type, map);
         serialize_field!("description", self.description, map);
         serialize_field!("descriptions", self.descriptions, map);
         serialize_field!("proxy", self.proxy, map);
