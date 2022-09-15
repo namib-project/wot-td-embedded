@@ -10,8 +10,7 @@ pub struct Form<'a> {
     pub href: &'a str,
     pub content_type: Option<&'a str>,
     pub content_coding: Option<&'a str>,
-    // TODO: Add operation type enum
-    pub op: Option<Array<'a, &'a str>>,
+    pub op: Option<Array<'a, OperationType>>,
     pub security: Option<Array<'a, &'a str>>,
     pub scopes: Option<Array<'a, &'a str>>,
     pub subprotocol: Option<&'a str>,
@@ -24,8 +23,7 @@ pub struct FormBuilder<'a> {
     pub href: &'a str,
     pub content_type: Option<&'a str>,
     pub content_coding: Option<&'a str>,
-    // TODO: Add operation type enum
-    pub op: Option<Array<'a, &'a str>>,
+    pub op: Option<Array<'a, OperationType>>,
     pub security: Option<Array<'a, &'a str>>,
     pub scopes: Option<Array<'a, &'a str>>,
     pub subprotocol: Option<&'a str>,
@@ -39,6 +37,11 @@ impl<'a> FormBuilder<'a> {
         }
     }
 
+    pub fn op(mut self, op: Array<'a, OperationType>) -> FormBuilder<'a> {
+        self.op = Some(op);
+        self
+    }
+
     pub fn build(self) -> Form<'a> {
         Form {
             href: self.href,
@@ -50,4 +53,27 @@ impl<'a> FormBuilder<'a> {
             subprotocol: self.subprotocol,
         }
     }
+}
+
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "lowercase")]
+pub enum OperationType {
+    Readproperty,
+    Writeproperty,
+    Observeproperty,
+    Unobserveproperty,
+    Invokeaction,
+    Queryaction,
+    Cancelaction,
+    Subscribeevent,
+    Unsubscribeevent,
+    Readallproperties,
+    Writeallproperties,
+    Readmultipleproperties,
+    Writemultipleproperties,
+    Observeallproperties,
+    Unobserveallproperties,
+    Subscribeallevents,
+    Unsubscribeallevents,
+    Queryallactions,
 }

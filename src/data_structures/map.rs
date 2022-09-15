@@ -2,7 +2,7 @@ use serde::{ser::SerializeMap, Serialize};
 
 #[derive(Debug, Default)]
 pub struct Map<'a, T: Serialize> {
-    last: Option<&'a MapEntry<'a, T>>,
+    root: Option<&'a MapEntry<'a, T>>,
 }
 
 impl<'a, T: Serialize> Serialize for Map<'a, T> {
@@ -10,22 +10,22 @@ impl<'a, T: Serialize> Serialize for Map<'a, T> {
     where
         S: serde::Serializer,
     {
-        if self.last.is_none() {
+        if self.root.is_none() {
             return serializer.serialize_map(Some(0))?.end();
         }
 
-        self.last.serialize(serializer)
+        self.root.serialize(serializer)
     }
 }
 
 impl<'a, T: Serialize> Map<'a, T> {
     pub fn new() -> Map<'a, T> {
-        Map { last: None }
+        Map { root: None }
     }
 
     pub fn insert(mut self, entry: &'a mut MapEntry<'a, T>) -> Map<'a, T> {
-        entry.next = self.last;
-        self.last = Some(entry);
+        entry.next = self.root;
+        self.root = Some(entry);
 
         self
     }

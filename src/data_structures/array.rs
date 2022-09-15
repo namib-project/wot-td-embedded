@@ -43,7 +43,7 @@ impl<'a, T: Serialize> ArrayEntry<'a, T> {
         self
     }
 
-    pub fn add_entry(&mut self, entry: &'a mut ArrayEntry<'a, T>) -> &mut ArrayEntry<'a, T> {
+    pub fn add_entry(mut self, entry: &'a mut ArrayEntry<'a, T>) -> ArrayEntry<'a, T> {
         let last_entry = self.get_last_entry();
         entry.index = last_entry.index + 1;
         self.get_last_entry().set_next(entry);

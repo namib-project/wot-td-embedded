@@ -233,7 +233,7 @@ mod tests {
             action::{Action, ActionBuilder},
             common::CommonFields,
             data_schema::{DataSchema, DataType},
-            form::{Form, FormBuilder},
+            form::{Form, FormBuilder, OperationType},
             link::Link,
             property::{Property, PropertyBuilder},
             security_definition::{SecurityScheme, SecuritySchemeType},
@@ -261,7 +261,9 @@ mod tests {
         let mut first_action = MapEntry::<Action>::new(
             "toggle",
             ActionBuilder::new(Array::<Form>::new(
-                FormBuilder::new("coaps://example.org/toggle").build(),
+                FormBuilder::new("coaps://example.org/toggle")
+                    .op(Array::<OperationType>::new(OperationType::Invokeaction))
+                    .build(),
             ))
             .input(&action_input)
             .build(),
@@ -327,7 +329,7 @@ mod tests {
             .properties(&mut properties)
             .build();
 
-        let expected_result = r#"{"@context":["https://www.w3.org/2022/wot/td/v1.1"],"@type":["saref:LightSwitch"],"title":"Test TD","properties":{"status":{"forms":[{"href":"coaps://example.org/status"}],"title":"Status","type":"boolean"}},"actions":{"toggle":{"forms":[{"href":"coaps://example.org/toggle"}],"input":{"title":"Toggle Data"}},"toggle2":{"forms":[{"href":"coaps://example.org/toggle2"}]}},"links":[{"href":"https://example.org"}],"security":["nosec_sc"],"securityDefinitions":{"nosec_sc":{"scheme":"nosec"}}}"#;
+        let expected_result = r#"{"@context":["https://www.w3.org/2022/wot/td/v1.1"],"@type":["saref:LightSwitch"],"title":"Test TD","properties":{"status":{"forms":[{"href":"coaps://example.org/status"}],"title":"Status","type":"boolean"}},"actions":{"toggle":{"forms":[{"href":"coaps://example.org/toggle","op":["invokeaction"]}],"input":{"title":"Toggle Data"}},"toggle2":{"forms":[{"href":"coaps://example.org/toggle2"}]}},"links":[{"href":"https://example.org"}],"security":["nosec_sc"],"securityDefinitions":{"nosec_sc":{"scheme":"nosec"}}}"#;
         let actual_result: String<600> = to_string(&thing_description)?;
 
         assert_eq!(expected_result, actual_result.as_str());
