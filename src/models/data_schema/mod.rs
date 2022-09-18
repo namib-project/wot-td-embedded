@@ -31,8 +31,8 @@ use self::{
 
 macro_rules! serialize_schema {
     ($schema:expr, $map:expr) => {
-        if $schema.is_some() {
-            $map = $schema.as_ref().unwrap().serialize_to_map::<S>($map)?;
+        if let Some(schema) = &$schema {
+            $map = schema.serialize_to_map::<S>($map)?;
         }
     };
 }
@@ -53,6 +53,7 @@ pub struct DataSchema<'a> {
     pub write_only: Option<bool>,
     pub format: Option<&'a str>,
     pub data_type: Option<DataType<'a>>,
+    pub additional_fields: Option<Map<'a, DataStructure<'a>>>,
 }
 
 impl<'a> DataSchema<'a> {
@@ -90,6 +91,7 @@ pub struct DataSchemaBuilder<'a> {
     pub write_only: Option<bool>,
     pub format: Option<&'a str>,
     pub data_type: Option<DataType<'a>>,
+    pub additional_fields: Option<Map<'a, DataStructure<'a>>>,
 }
 
 impl<'a> DataSchemaBuilder<'a> {
@@ -169,6 +171,11 @@ impl<'a> DataSchemaBuilder<'a> {
         self
     }
 
+    pub fn additional_fields(mut self, additional_fields: Map<'a, DataStructure<'a>>) -> Self {
+        self.additional_fields = Some(additional_fields);
+        self
+    }
+
     pub fn build(self) -> DataSchema<'a> {
         DataSchema {
             json_ld_type: self.json_ld_type,
@@ -185,6 +192,7 @@ impl<'a> DataSchemaBuilder<'a> {
             write_only: self.write_only,
             format: self.format,
             data_type: self.data_type,
+            additional_fields: self.additional_fields,
         }
     }
 }
@@ -210,9 +218,9 @@ impl<'a> DataSchema<'a> {
 
         let mut map = map;
 
-        if self.data_type.is_some() {
+        if let Some(data_type) = &self.data_type {
             map.serialize_key("type")?;
-            match &self.data_type.as_ref().unwrap() {
+            match data_type {
                 DataType::Object(schema) => {
                     map.serialize_value("object")?;
                     serialize_schema!(schema, map);
@@ -239,6 +247,12 @@ impl<'a> DataSchema<'a> {
                 DataType::Null => {
                     map.serialize_value("null")?;
                 }
+            }
+        }
+
+        if let Some(additional_fields) = &self.additional_fields {
+            for map_entry in additional_fields.iter() {
+                map.serialize_entry(map_entry.key, map_entry.value)?;
             }
         }
 

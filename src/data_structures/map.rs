@@ -49,8 +49,8 @@ pub struct Iter<'a, T> {
 }
 
 pub struct MapItem<'a, T> {
-    key: &'a str,
-    value: &'a T,
+    pub key: &'a str,
+    pub value: &'a T,
 }
 
 impl<'a, T> Iterator for Iter<'a, T> {

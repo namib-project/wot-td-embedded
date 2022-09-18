@@ -24,8 +24,8 @@ pub mod version_info;
 #[macro_export]
 macro_rules! serialize_field {
     ($key:expr, $field:expr, $map:expr) => {
-        if $field.is_some() {
-            $map.serialize_entry($key, &$field)?;
+        if let Some(value) = &$field {
+            $map.serialize_entry($key, value)?;
         }
     };
 }

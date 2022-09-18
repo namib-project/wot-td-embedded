@@ -37,11 +37,8 @@ impl<'a> Serialize for Property<'a> {
 
         map.serialize_entry("forms", &self.forms)?;
 
-        if self.observable.is_some() {
-            map.serialize_entry(
-                "observable",
-                &self.observable.expect("Expected observable to be Some!"),
-            )?;
+        if let Some(value) = &self.observable {
+            map.serialize_entry("observable", value)?;
         }
 
         self.data_schema.serialize_to_map::<S>(map)?.end()
