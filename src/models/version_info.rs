@@ -20,8 +20,15 @@ pub struct VersionInfo<'a> {
 }
 
 impl<'a> VersionInfo<'a> {
-    pub fn builder() -> VersionInfoBuilder<'a> {
-        VersionInfoBuilder::default()
+    pub fn new(instance: &'a str) -> VersionInfo<'a> {
+        VersionInfo {
+            instance,
+            ..Default::default()
+        }
+    }
+
+    pub fn builder(instance: &'a str) -> VersionInfoBuilder<'a> {
+        VersionInfoBuilder::new(instance)
     }
 }
 
@@ -65,10 +72,7 @@ mod tests {
 
     #[test]
     fn serialize() -> Result<(), Error> {
-        let additional_expected_response = VersionInfo::builder()
-            .instance("v1.0.0")
-            .model("v0.1.0")
-            .build();
+        let additional_expected_response = VersionInfo::builder("v1.0.0").model("v0.1.0").build();
 
         let expected_result = r#"{"instance":"v1.0.0","model":"v0.1.0"}"#;
         let actual_result: String<50> = to_string(&additional_expected_response)?;

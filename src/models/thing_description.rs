@@ -282,6 +282,7 @@ mod tests {
             property::Property,
             security_definition::{SecurityScheme, SecuritySchemeType},
             thing_description::{ContextEntry, ThingDescription},
+            version_info::VersionInfo,
         },
     };
     use serde_json_core::{heapless::String, ser::Error, to_string};
@@ -307,7 +308,7 @@ mod tests {
             &action1,
         );
 
-        let links = Array::new(Link::builder().href("https://example.org").build());
+        let links = Array::new(Link::new("https://example.org"));
         let json_ld_type = Array::new("saref:LightSwitch");
 
         const NO_SEC_KEY: &str = "nosec_sc";
@@ -360,9 +361,10 @@ mod tests {
             .links(links)
             .security(security)
             .security_definitions(&security_definitions)
+            .version(VersionInfo::new("v1.0.0"))
             .build();
 
-        let expected_result = r#"{"@context":["https://www.w3.org/2022/wot/td/v1.1",{"cov":"http://www.example.org/coap-binding#"}],"@type":["saref:LightSwitch"],"title":"Test TD","description":"Description for the Test TD","properties":{"status":{"forms":[{"href":"coaps://example.org/status"}],"title":"Status","type":"boolean"}},"actions":{"toggle":{"forms":[{"href":"coaps://example.org/toggle","op":["invokeaction"]}],"input":{"title":"Toggle Data"}},"toggle2":{"forms":[{"href":"coaps://example.org/toggle2"}]}},"events":{"overheating":{"forms":[{"href":"coaps://example.org/overheating"}],"data":{"type":"integer"}}},"links":[{"href":"https://example.org"}],"security":["nosec_sc"],"securityDefinitions":{"nosec_sc":{"scheme":"nosec"}}}"#;
+        let expected_result = r#"{"@context":["https://www.w3.org/2022/wot/td/v1.1",{"cov":"http://www.example.org/coap-binding#"}],"@type":["saref:LightSwitch"],"title":"Test TD","description":"Description for the Test TD","version":{"instance":"v1.0.0"},"properties":{"status":{"forms":[{"href":"coaps://example.org/status"}],"title":"Status","type":"boolean"}},"actions":{"toggle":{"forms":[{"href":"coaps://example.org/toggle","op":["invokeaction"]}],"input":{"title":"Toggle Data"}},"toggle2":{"forms":[{"href":"coaps://example.org/toggle2"}]}},"events":{"overheating":{"forms":[{"href":"coaps://example.org/overheating"}],"data":{"type":"integer"}}},"links":[{"href":"https://example.org"}],"security":["nosec_sc"],"securityDefinitions":{"nosec_sc":{"scheme":"nosec"}}}"#;
         let actual_result: String<800> = to_string(&thing_description)?;
 
         assert_eq!(expected_result, actual_result.as_str());

@@ -28,8 +28,15 @@ pub struct Link<'a> {
 }
 
 impl<'a> Link<'a> {
-    pub fn builder() -> LinkBuilder<'a> {
-        LinkBuilder::default()
+    pub fn builder(href: &'a str) -> LinkBuilder<'a> {
+        LinkBuilder::new(href)
+    }
+
+    pub fn new(href: &'a str) -> Self {
+        Link {
+            href,
+            ..Default::default()
+        }
     }
 }
 
@@ -100,8 +107,7 @@ mod tests {
     fn serialize() -> Result<(), Error> {
         let hreflang = Array::<&str>::new("de");
 
-        let additional_expected_response = Link::builder()
-            .href("coap://example.org")
+        let additional_expected_response = Link::builder("coap://example.org")
             .link_type("test:testLink")
             .rel("test")
             .anchor("test")
