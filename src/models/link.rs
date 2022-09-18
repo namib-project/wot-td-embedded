@@ -19,7 +19,7 @@ use crate::data_structures::array::Array;
 #[serde(rename_all = "camelCase")]
 pub struct Link<'a> {
     pub href: &'a str,
-    #[serde(rename = "type")]
+    #[serde(rename = "@type")]
     pub link_type: Option<&'a str>,
     pub rel: Option<&'a str>,
     pub anchor: Option<&'a str>,
@@ -85,5 +85,33 @@ impl<'a> LinkBuilder<'a> {
             sizes: self.sizes,
             hreflang: self.hreflang,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json_core::{heapless::String, ser::Error, to_string};
+
+    use crate::data_structures::array::Array;
+
+    use super::Link;
+
+    #[test]
+    fn serialize() -> Result<(), Error> {
+        let hreflang = Array::<&str>::new("de");
+
+        let additional_expected_response = Link::builder()
+            .href("coap://example.org")
+            .link_type("test:testLink")
+            .rel("test")
+            .anchor("test")
+            .hreflang(hreflang)
+            .build();
+
+        let expected_result = r#"{"href":"coap://example.org","@type":"test:testLink","rel":"test","anchor":"test","hreflang":["de"]}"#;
+        let actual_result: String<100> = to_string(&additional_expected_response)?;
+
+        assert_eq!(expected_result, actual_result.as_str());
+        Ok(())
     }
 }

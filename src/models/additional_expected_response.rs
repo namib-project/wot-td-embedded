@@ -60,3 +60,27 @@ impl<'a> AdditionalExpectedResponseBuilder<'a> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use serde_json_core::{heapless::String, ser::Error, to_string};
+
+    use super::AdditionalExpectedResponse;
+
+    #[test]
+    fn serialize() -> Result<(), Error> {
+        let additional_expected_response = AdditionalExpectedResponse::builder()
+            .content_type("application/json")
+            .success(true)
+            .schema("test")
+            .build();
+
+        let expected_result =
+            r#"{"success":true,"contentType":"application/json","schema":"test"}"#;
+        let actual_result: String<65> = to_string(&additional_expected_response)?;
+
+        assert_eq!(expected_result, actual_result.as_str());
+        Ok(())
+    }
+}

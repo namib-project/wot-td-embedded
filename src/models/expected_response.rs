@@ -22,3 +22,20 @@ impl<'a> ExpectedResponse<'a> {
         ExpectedResponse { content_type }
     }
 }
+#[cfg(test)]
+mod tests {
+    use serde_json_core::{heapless::String, ser::Error, to_string};
+
+    use super::ExpectedResponse;
+
+    #[test]
+    fn serialize() -> Result<(), Error> {
+        let additional_expected_response = ExpectedResponse::new("application/json");
+
+        let expected_result = r#"{"contentType":"application/json"}"#;
+        let actual_result: String<34> = to_string(&additional_expected_response)?;
+
+        assert_eq!(expected_result, actual_result.as_str());
+        Ok(())
+    }
+}
