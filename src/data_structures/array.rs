@@ -13,52 +13,45 @@ use serde::{ser::SerializeSeq, Serialize};
 
 pub type Array<'a, T> = ArrayEntry<'a, T>;
 
-#[derive(Debug)]
-pub struct ArrayEntry<'a, T: Serialize>
-where
-    T: Serialize,
-{
+#[derive(Debug, Default)]
+pub struct ArrayEntry<'a, T> {
     value: T,
-    index: usize,
-    next: Option<&'a mut ArrayEntry<'a, T>>,
+    next: Option<&'a ArrayEntry<'a, T>>,
 }
 
-impl<'a, T: Serialize> ArrayEntry<'a, T> {
-    pub fn new(value: T) -> ArrayEntry<'a, T> {
+impl<'a, T> ArrayEntry<'a, T> {
+    pub fn new(value: T) -> Self {
+        ArrayEntry { value, next: None }
+    }
+
+    pub fn add(value: T, next: &'a ArrayEntry<'a, T>) -> Self {
         ArrayEntry {
             value,
-            index: 0,
-            next: None,
+            next: Some(next),
         }
     }
 
-    fn get_last_entry(&mut self) -> &mut ArrayEntry<'a, T> {
-        let mut current_entry = self;
+    pub fn iter(&'a self) -> Iter<'a, T> {
+        Iter {
+            current: Some(self),
+        }
+    }
+}
 
-        loop {
-            if current_entry.next.is_none() {
-                break;
+pub struct Iter<'a, T> {
+    current: Option<&'a ArrayEntry<'a, T>>,
+}
+
+impl<'a, T> Iterator for Iter<'a, T> {
+    type Item = &'a T;
+    fn next(&mut self) -> Option<&'a T> {
+        match self.current {
+            Some(ArrayEntry { value, next }) => {
+                self.current = *next;
+                Some(value)
             }
-
-            current_entry = current_entry
-                .next
-                .as_mut()
-                .expect("Expected a next element");
+            None => None,
         }
-
-        current_entry
-    }
-
-    pub fn set_next(&mut self, next: &'a mut ArrayEntry<'a, T>) -> &ArrayEntry<'a, T> {
-        self.next = Some(next);
-        self
-    }
-
-    pub fn add_entry(mut self, entry: &'a mut ArrayEntry<'a, T>) -> ArrayEntry<'a, T> {
-        let last_entry = self.get_last_entry();
-        entry.index = last_entry.index + 1;
-        self.get_last_entry().set_next(entry);
-        self
     }
 }
 
@@ -69,19 +62,8 @@ impl<'a, T: Serialize> Serialize for ArrayEntry<'a, T> {
     {
         let mut sequence = serializer.serialize_seq(None)?;
 
-        let mut current_entry = self;
-
-        loop {
-            sequence.serialize_element(&current_entry.value)?;
-
-            if current_entry.next.is_none() {
-                break;
-            }
-
-            current_entry = current_entry
-                .next
-                .as_ref()
-                .expect("Expected a next element");
+        for item in self.iter() {
+            sequence.serialize_element(item)?;
         }
 
         sequence.end()

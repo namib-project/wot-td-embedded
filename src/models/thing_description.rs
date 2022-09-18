@@ -54,12 +54,12 @@ pub struct ThingDescription<'a> {
     pub support: Option<&'a str>,
     pub base: Option<&'a str>,
     pub properties: Option<&'a Map<'a, Property<'a>>>,
-    pub actions: Option<&'a mut Map<'a, Action<'a>>>,
-    pub events: Option<&'a mut Map<'a, Event<'a>>>,
+    pub actions: Option<&'a Map<'a, Action<'a>>>,
+    pub events: Option<&'a Map<'a, Event<'a>>>,
     pub links: Option<Array<'a, Link<'a>>>,
     pub forms: Option<Array<'a, Form<'a>>>,
     pub security: Option<Array<'a, &'a str>>,
-    pub security_definitions: Option<&'a mut Map<'a, SecurityScheme<'a>>>,
+    pub security_definitions: Option<&'a Map<'a, SecurityScheme<'a>>>,
     pub profile: Option<Array<'a, &'a str>>,
     pub schema_definitions: Option<Map<'a, DataSchema<'a>>>,
     pub uri_variables: Option<Map<'a, DataSchema<'a>>>,
@@ -86,12 +86,12 @@ pub struct ThingDescriptionBuilder<'a> {
     pub support: Option<&'a str>,
     pub base: Option<&'a str>,
     pub properties: Option<&'a Map<'a, Property<'a>>>,
-    pub actions: Option<&'a mut Map<'a, Action<'a>>>,
-    pub events: Option<&'a mut Map<'a, Event<'a>>>,
+    pub actions: Option<&'a Map<'a, Action<'a>>>,
+    pub events: Option<&'a Map<'a, Event<'a>>>,
     pub links: Option<Array<'a, Link<'a>>>,
     pub forms: Option<Array<'a, Form<'a>>>,
     pub security: Option<Array<'a, &'a str>>,
-    pub security_definitions: Option<&'a mut Map<'a, SecurityScheme<'a>>>,
+    pub security_definitions: Option<&'a Map<'a, SecurityScheme<'a>>>,
     pub profile: Option<Array<'a, &'a str>>,
     pub schema_definitions: Option<Map<'a, DataSchema<'a>>>,
     pub uri_variables: Option<Map<'a, DataSchema<'a>>>,
@@ -191,12 +191,12 @@ impl<'a> ThingDescriptionBuilder<'a> {
         self
     }
 
-    pub fn actions(mut self, actions: &'a mut Map<'a, Action<'a>>) -> ThingDescriptionBuilder<'a> {
+    pub fn actions(mut self, actions: &'a Map<'a, Action<'a>>) -> ThingDescriptionBuilder<'a> {
         self.actions = Some(actions);
         self
     }
 
-    pub fn events(mut self, events: &'a mut Map<'a, Event<'a>>) -> ThingDescriptionBuilder<'a> {
+    pub fn events(mut self, events: &'a Map<'a, Event<'a>>) -> ThingDescriptionBuilder<'a> {
         self.events = Some(events);
         self
     }
@@ -223,7 +223,7 @@ impl<'a> ThingDescriptionBuilder<'a> {
 
     pub fn security_definitions(
         mut self,
-        security_definitions: &'a mut Map<'a, SecurityScheme<'a>>,
+        security_definitions: &'a Map<'a, SecurityScheme<'a>>,
     ) -> ThingDescriptionBuilder<'a> {
         self.security_definitions = Some(security_definitions);
         self
@@ -288,7 +288,14 @@ mod tests {
 
     #[test]
     fn serialize_thing_description() -> Result<(), Error> {
-        let mut first_action = MapEntry::<Action>::new(
+        let action1 = Map::<Action>::new(
+            "toggle2",
+            ActionBuilder::new(Array::<Form>::new(
+                FormBuilder::new("coaps://example.org/toggle2").build(),
+            ))
+            .build(),
+        );
+        let actions = MapEntry::add(
             "toggle",
             ActionBuilder::new(Array::<Form>::new(
                 Form::builder("coaps://example.org/toggle")
@@ -297,19 +304,8 @@ mod tests {
             ))
             .input(DataSchema::builder().title("Toggle Data").build())
             .build(),
+            &action1,
         );
-
-        let mut second_action = MapEntry::<Action>::new(
-            "toggle2",
-            ActionBuilder::new(Array::<Form>::new(
-                FormBuilder::new("coaps://example.org/toggle2").build(),
-            ))
-            .build(),
-        );
-
-        let mut actions = Map::<Action>::new()
-            .insert(&mut second_action)
-            .insert(&mut first_action);
 
         let links = Array::new(Link::builder().href("https://example.org").build());
         let json_ld_type = Array::new("saref:LightSwitch");
@@ -317,13 +313,12 @@ mod tests {
         const NO_SEC_KEY: &str = "nosec_sc";
         let security = Array::new(NO_SEC_KEY);
 
-        let mut no_security = MapEntry::new(
+        let security_definitions = Map::<SecurityScheme>::new(
             NO_SEC_KEY,
             SecurityScheme::builder(SecuritySchemeType::Nosec).build(),
         );
-        let mut security_definitions = Map::<SecurityScheme>::new().insert(&mut no_security);
 
-        let mut first_property = MapEntry::<Property>::new(
+        let properties = Map::<Property>::new(
             "status",
             Property::builder(
                 Array::<Form>::new(FormBuilder::new("coaps://example.org/status").build()),
@@ -335,15 +330,13 @@ mod tests {
             .build(),
         );
 
-        let mut properties = Map::<Property>::new().insert(&mut first_property);
+        let coap_context = ArrayEntry::new(ContextEntry::MapEntry(Map::<&str>::new(
+            "cov",
+            "http://www.example.org/coap-binding#",
+        )));
+        let context = Array::add(ContextEntry::default(), &coap_context);
 
-        let mut coap_context = MapEntry::new("cov", "http://www.example.org/coap-binding#");
-        let context_entries = Map::<&str>::new().insert(&mut coap_context);
-        let mut context_map = ArrayEntry::new(ContextEntry::MapEntry(context_entries));
-        let context =
-            Array::<ContextEntry>::new(ContextEntry::default()).add_entry(&mut context_map);
-
-        let mut first_event = MapEntry::<Event>::new(
+        let events = Map::<Event>::new(
             "overheating",
             Event::builder(Array::<Form>::new(
                 FormBuilder::new("coaps://example.org/overheating").build(),
@@ -356,19 +349,17 @@ mod tests {
             .build(),
         );
 
-        let mut events = Map::<Event>::new().insert(&mut first_event);
-
         let thing_description = ThingDescription::builder()
             .context(context)
             .title("Test TD")
             .description("Description for the Test TD")
             .json_ld_type(json_ld_type)
-            .properties(&mut properties)
-            .actions(&mut actions)
-            .events(&mut events)
+            .properties(&properties)
+            .actions(&actions)
+            .events(&events)
             .links(links)
             .security(security)
-            .security_definitions(&mut security_definitions)
+            .security_definitions(&security_definitions)
             .build();
 
         let expected_result = r#"{"@context":["https://www.w3.org/2022/wot/td/v1.1",{"cov":"http://www.example.org/coap-binding#"}],"@type":["saref:LightSwitch"],"title":"Test TD","description":"Description for the Test TD","properties":{"status":{"forms":[{"href":"coaps://example.org/status"}],"title":"Status","type":"boolean"}},"actions":{"toggle":{"forms":[{"href":"coaps://example.org/toggle","op":["invokeaction"]}],"input":{"title":"Toggle Data"}},"toggle2":{"forms":[{"href":"coaps://example.org/toggle2"}]}},"events":{"overheating":{"forms":[{"href":"coaps://example.org/overheating"}],"data":{"type":"integer"}}},"links":[{"href":"https://example.org"}],"security":["nosec_sc"],"securityDefinitions":{"nosec_sc":{"scheme":"nosec"}}}"#;

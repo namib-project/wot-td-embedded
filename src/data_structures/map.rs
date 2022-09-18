@@ -11,53 +11,57 @@
 
 use serde::{ser::SerializeMap, Serialize};
 
-#[derive(Debug, Default)]
-pub struct Map<'a, T: Serialize> {
-    root: Option<&'a MapEntry<'a, T>>,
-}
-
-impl<'a, T: Serialize> Serialize for Map<'a, T> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        if self.root.is_none() {
-            return serializer.serialize_map(Some(0))?.end();
-        }
-
-        self.root.serialize(serializer)
-    }
-}
-
-impl<'a, T: Serialize> Map<'a, T> {
-    pub fn new() -> Map<'a, T> {
-        Map { root: None }
-    }
-
-    pub fn insert(mut self, entry: &'a mut MapEntry<'a, T>) -> Map<'a, T> {
-        entry.next = self.root;
-        self.root = Some(entry);
-
-        self
-    }
-}
+pub type Map<'a, T> = MapEntry<'a, T>;
 
 #[derive(Debug, Default)]
-pub struct MapEntry<'a, T>
-where
-    T: Serialize,
-{
+pub struct MapEntry<'a, T> {
     key: &'a str,
     value: T,
     next: Option<&'a MapEntry<'a, T>>,
 }
 
-impl<'a, T: Serialize> MapEntry<'a, T> {
-    pub fn new(key: &'a str, value: T) -> MapEntry<T> {
+impl<'a, T> MapEntry<'a, T> {
+    pub fn new(key: &'a str, value: T) -> Self {
         MapEntry {
             key,
             value,
             next: None,
+        }
+    }
+
+    pub fn add(key: &'a str, value: T, next: &'a MapEntry<'a, T>) -> Self {
+        MapEntry {
+            key,
+            value,
+            next: Some(next),
+        }
+    }
+
+    pub fn iter(&'a self) -> Iter<'a, T> {
+        Iter {
+            current: Some(self),
+        }
+    }
+}
+
+pub struct Iter<'a, T> {
+    current: Option<&'a MapEntry<'a, T>>,
+}
+
+pub struct MapItem<'a, T> {
+    key: &'a str,
+    value: &'a T,
+}
+
+impl<'a, T> Iterator for Iter<'a, T> {
+    type Item = MapItem<'a, T>;
+    fn next(&mut self) -> Option<MapItem<'a, T>> {
+        match self.current {
+            Some(MapEntry { key, value, next }) => {
+                self.current = *next;
+                Some(MapItem { key, value })
+            }
+            None => None,
         }
     }
 }
@@ -67,23 +71,12 @@ impl<'a, T: Serialize> Serialize for MapEntry<'a, T> {
     where
         S: serde::Serializer,
     {
-        let mut map = serializer.serialize_map(None)?;
+        let mut sequence = serializer.serialize_map(None)?;
 
-        let mut current_entry = self;
-
-        loop {
-            map.serialize_entry(current_entry.key, &current_entry.value)?;
-
-            if current_entry.next.is_none() {
-                break;
-            }
-
-            current_entry = current_entry
-                .next
-                .as_ref()
-                .expect("Expected a next element");
+        for item in self.iter() {
+            sequence.serialize_entry(item.key, item.value)?;
         }
 
-        map.end()
+        sequence.end()
     }
 }
