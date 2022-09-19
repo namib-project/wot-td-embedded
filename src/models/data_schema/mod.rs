@@ -41,9 +41,9 @@ macro_rules! serialize_schema {
 pub struct DataSchema<'a> {
     pub json_ld_type: Option<Array<'a, &'a str>>,
     pub title: Option<&'a str>,
-    pub titles: Option<&'a Map<'a, &'a str>>,
+    pub titles: Option<Map<'a, &'a str>>,
     pub description: Option<&'a str>,
-    pub descriptions: Option<&'a Map<'a, &'a str>>,
+    pub descriptions: Option<Map<'a, &'a str>>,
     pub constant: Option<DataStructure<'a>>,
     pub default: Option<DataStructure<'a>>,
     pub unit: Option<&'a str>,
@@ -79,9 +79,9 @@ impl<'a> Serialize for DataSchema<'a> {
 pub struct DataSchemaBuilder<'a> {
     pub json_ld_type: Option<Array<'a, &'a str>>,
     pub title: Option<&'a str>,
-    pub titles: Option<&'a Map<'a, &'a str>>,
+    pub titles: Option<Map<'a, &'a str>>,
     pub description: Option<&'a str>,
-    pub descriptions: Option<&'a Map<'a, &'a str>>,
+    pub descriptions: Option<Map<'a, &'a str>>,
     pub constant: Option<DataStructure<'a>>,
     pub default: Option<DataStructure<'a>>,
     pub unit: Option<&'a str>,
@@ -111,7 +111,7 @@ impl<'a> DataSchemaBuilder<'a> {
         self
     }
 
-    pub fn titles(mut self, titles: &'a Map<'a, &'a str>) -> Self {
+    pub fn titles(mut self, titles: Map<'a, &'a str>) -> Self {
         self.titles = Some(titles);
         self
     }
@@ -121,7 +121,7 @@ impl<'a> DataSchemaBuilder<'a> {
         self
     }
 
-    pub fn descriptions(mut self, descriptions: &'a Map<'a, &'a str>) -> Self {
+    pub fn descriptions(mut self, descriptions: Map<'a, &'a str>) -> Self {
         self.descriptions = Some(descriptions);
         self
     }

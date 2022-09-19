@@ -91,7 +91,7 @@ pub struct ThingDescriptionBuilder<'a> {
     pub links: Option<Array<'a, Link<'a>>>,
     pub forms: Option<Array<'a, Form<'a>>>,
     pub security: Option<Array<'a, &'a str>>,
-    pub security_definitions: Option<&'a Map<'a, SecurityScheme<'a>>>,
+    pub security_definitions: Option<Map<'a, SecurityScheme<'a>>>,
     pub profile: Option<Array<'a, &'a str>>,
     pub schema_definitions: Option<Map<'a, DataSchema<'a>>>,
     pub uri_variables: Option<Map<'a, DataSchema<'a>>>,
