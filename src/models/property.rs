@@ -13,7 +13,7 @@ use serde::{ser::SerializeMap, Serialize};
 
 use crate::{
     data_structures::array::Array,
-    serialization::{JsonString, JsonValue, SerializableField},
+    serialization::{JsonString, JsonValue, NestedJsonValue, SerializableField},
 };
 
 use super::{data_schema::DataSchema, form::Form};
@@ -42,8 +42,8 @@ impl<'a> JsonValue for Property<'a> {
         index = self.forms.serialize_field("forms", buf, index, false)?;
         index = self
             .observable
-            .serialize_field("observable", buf, index, false)?;
-        // index = self.data_schema.serialize_nested_field(buf, index, false)?; // TODO: Implement
+            .serialize_field("observable", buf, index, true)?;
+        index = self.data_schema.to_nested_json_value(buf, index, true)?;
 
         index = "}".to_json_string(buf, index)?;
 

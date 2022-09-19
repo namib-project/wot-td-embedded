@@ -21,7 +21,7 @@ use serde_with::skip_serializing_none;
 use crate::{
     constants::JSON_LD_TYPE,
     data_structures::{array::Array, map::Map},
-    serialization::{JsonString, JsonValue, SerializableField},
+    serialization::{JsonString, JsonValue, NestedJsonValue, SerializableField},
     serialize_field,
 };
 
@@ -73,12 +73,25 @@ impl<'a> JsonValue for DataSchema<'a> {
     ) -> Result<usize, crate::serialization::SerializationError> {
         let mut index = "{".to_json_string(buf, index)?;
 
-        let mut has_previous = false;
+        self.to_nested_json_value(buf, index, false)?;
 
-        index = self
+        index = "}".to_json_string(buf, index)?;
+
+        Ok(index)
+    }
+}
+
+impl<'a> NestedJsonValue for DataSchema<'a> {
+    fn to_nested_json_value(
+        &self,
+        buf: &mut [u8],
+        index: usize,
+        has_previous: bool,
+    ) -> Result<usize, crate::serialization::SerializationError> {
+        let mut index = self
             .json_ld_type
             .serialize_field("@type", buf, index, has_previous)?;
-        has_previous |= self.json_ld_type.is_some();
+        let mut has_previous = has_previous | self.json_ld_type.is_some();
 
         index = self
             .title
@@ -139,8 +152,6 @@ impl<'a> JsonValue for DataSchema<'a> {
         //         additional_field.value.to_json_value(buf, index)?;
         //     }
         // }
-
-        index = "}".to_json_string(buf, index)?;
 
         Ok(index)
     }

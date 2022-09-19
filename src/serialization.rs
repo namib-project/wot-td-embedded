@@ -13,6 +13,15 @@ pub(crate) trait JsonValue {
     fn to_json_value(&self, buf: &mut [u8], index: usize) -> Result<usize, SerializationError>;
 }
 
+pub(crate) trait NestedJsonValue {
+    fn to_nested_json_value(
+        &self,
+        buf: &mut [u8],
+        index: usize,
+        has_previous: bool,
+    ) -> Result<usize, SerializationError>;
+}
+
 pub(crate) trait JsonString {
     fn to_json_string(self, buf: &mut [u8], index: usize) -> Result<usize, SerializationError>;
 }
