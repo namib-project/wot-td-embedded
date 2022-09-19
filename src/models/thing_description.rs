@@ -53,13 +53,13 @@ pub struct ThingDescription<'a> {
     pub modified: Option<&'a str>,
     pub support: Option<&'a str>,
     pub base: Option<&'a str>,
-    pub properties: Option<&'a Map<'a, Property<'a>>>,
-    pub actions: Option<&'a Map<'a, Action<'a>>>,
-    pub events: Option<&'a Map<'a, Event<'a>>>,
+    pub properties: Option<Map<'a, Property<'a>>>,
+    pub actions: Option<Map<'a, Action<'a>>>,
+    pub events: Option<Map<'a, Event<'a>>>,
     pub links: Option<Array<'a, Link<'a>>>,
     pub forms: Option<Array<'a, Form<'a>>>,
     pub security: Option<Array<'a, &'a str>>,
-    pub security_definitions: Option<&'a Map<'a, SecurityScheme<'a>>>,
+    pub security_definitions: Option<Map<'a, SecurityScheme<'a>>>,
     pub profile: Option<Array<'a, &'a str>>,
     pub schema_definitions: Option<Map<'a, DataSchema<'a>>>,
     pub uri_variables: Option<Map<'a, DataSchema<'a>>>,
@@ -85,9 +85,9 @@ pub struct ThingDescriptionBuilder<'a> {
     pub modified: Option<&'a str>,
     pub support: Option<&'a str>,
     pub base: Option<&'a str>,
-    pub properties: Option<&'a Map<'a, Property<'a>>>,
-    pub actions: Option<&'a Map<'a, Action<'a>>>,
-    pub events: Option<&'a Map<'a, Event<'a>>>,
+    pub properties: Option<Map<'a, Property<'a>>>,
+    pub actions: Option<Map<'a, Action<'a>>>,
+    pub events: Option<Map<'a, Event<'a>>>,
     pub links: Option<Array<'a, Link<'a>>>,
     pub forms: Option<Array<'a, Form<'a>>>,
     pub security: Option<Array<'a, &'a str>>,
@@ -183,20 +183,17 @@ impl<'a> ThingDescriptionBuilder<'a> {
         self
     }
 
-    pub fn properties(
-        mut self,
-        properties: &'a Map<'a, Property<'a>>,
-    ) -> ThingDescriptionBuilder<'a> {
+    pub fn properties(mut self, properties: Map<'a, Property<'a>>) -> ThingDescriptionBuilder<'a> {
         self.properties = Some(properties);
         self
     }
 
-    pub fn actions(mut self, actions: &'a Map<'a, Action<'a>>) -> ThingDescriptionBuilder<'a> {
+    pub fn actions(mut self, actions: Map<'a, Action<'a>>) -> ThingDescriptionBuilder<'a> {
         self.actions = Some(actions);
         self
     }
 
-    pub fn events(mut self, events: &'a Map<'a, Event<'a>>) -> ThingDescriptionBuilder<'a> {
+    pub fn events(mut self, events: Map<'a, Event<'a>>) -> ThingDescriptionBuilder<'a> {
         self.events = Some(events);
         self
     }
@@ -223,7 +220,7 @@ impl<'a> ThingDescriptionBuilder<'a> {
 
     pub fn security_definitions(
         mut self,
-        security_definitions: &'a Map<'a, SecurityScheme<'a>>,
+        security_definitions: Map<'a, SecurityScheme<'a>>,
     ) -> ThingDescriptionBuilder<'a> {
         self.security_definitions = Some(security_definitions);
         self
@@ -355,12 +352,12 @@ mod tests {
             .title("Test TD")
             .description("Description for the Test TD")
             .json_ld_type(json_ld_type)
-            .properties(&properties)
-            .actions(&actions)
-            .events(&events)
+            .properties(properties)
+            .actions(actions)
+            .events(events)
             .links(links)
             .security(security)
-            .security_definitions(&security_definitions)
+            .security_definitions(security_definitions)
             .version(VersionInfo::new("v1.0.0"))
             .build();
 

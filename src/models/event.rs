@@ -23,9 +23,9 @@ pub struct Event<'a> {
     pub forms: Array<'a, Form<'a>>,
     pub json_ld_type: Option<Array<'a, &'a str>>,
     pub title: Option<&'a str>,
-    pub titles: Option<&'a Map<'a, &'a str>>,
+    pub titles: Option<Map<'a, &'a str>>,
     pub description: Option<&'a str>,
-    pub descriptions: Option<&'a Map<'a, &'a str>>,
+    pub descriptions: Option<Map<'a, &'a str>>,
     pub subscription: Option<DataSchema<'a>>,
     pub data: Option<DataSchema<'a>>,
     pub data_response: Option<DataSchema<'a>>,
@@ -43,9 +43,9 @@ pub struct EventBuilder<'a> {
     pub forms: Array<'a, Form<'a>>,
     pub json_ld_type: Option<Array<'a, &'a str>>,
     pub title: Option<&'a str>,
-    pub titles: Option<&'a Map<'a, &'a str>>,
+    pub titles: Option<Map<'a, &'a str>>,
     pub description: Option<&'a str>,
-    pub descriptions: Option<&'a Map<'a, &'a str>>,
+    pub descriptions: Option<Map<'a, &'a str>>,
     pub subscription: Option<DataSchema<'a>>,
     pub data: Option<DataSchema<'a>>,
     pub data_response: Option<DataSchema<'a>>,
@@ -67,6 +67,8 @@ impl<'a> EventBuilder<'a> {
             cancellation: None,
         }
     }
+
+    // TODO: Add missing builder methods
 
     pub fn subscription(mut self, subscription: DataSchema<'a>) -> EventBuilder<'a> {
         self.subscription = Some(subscription);

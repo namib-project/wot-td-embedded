@@ -139,7 +139,7 @@ impl<'a> Serialize for SecurityScheme<'a> {
                 map.serialize_value("digest")?;
                 serialize_field!("name", &security.name, map);
                 serialize_field!("in", &security.r#in, map);
-                serialize_field!("in", &security.qop, map);
+                serialize_field!("qop", &security.qop, map);
             }
             SecuritySchemeType::Apikey(security) => {
                 map.serialize_value("apikey")?;

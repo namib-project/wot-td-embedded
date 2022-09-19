@@ -24,9 +24,9 @@ pub struct Action<'a> {
     #[serde(rename = "@type")]
     pub json_ld_type: Option<Array<'a, &'a str>>,
     pub title: Option<&'a str>,
-    pub titles: Option<&'a Map<'a, &'a str>>,
+    pub titles: Option<Map<'a, &'a str>>,
     pub description: Option<&'a str>,
-    pub descriptions: Option<&'a Map<'a, &'a str>>,
+    pub descriptions: Option<Map<'a, &'a str>>,
     pub input: Option<DataSchema<'a>>,
     pub output: Option<DataSchema<'a>>,
     pub safe: Option<bool>,
@@ -46,9 +46,9 @@ pub struct ActionBuilder<'a> {
     pub forms: Array<'a, Form<'a>>,
     pub json_ld_type: Option<Array<'a, &'a str>>,
     pub title: Option<&'a str>,
-    pub titles: Option<&'a Map<'a, &'a str>>,
+    pub titles: Option<Map<'a, &'a str>>,
     pub description: Option<&'a str>,
-    pub descriptions: Option<&'a Map<'a, &'a str>>,
+    pub descriptions: Option<Map<'a, &'a str>>,
     pub input: Option<DataSchema<'a>>,
     pub output: Option<DataSchema<'a>>,
     pub safe: Option<bool>,
@@ -83,7 +83,7 @@ impl<'a> ActionBuilder<'a> {
         self
     }
 
-    pub fn titles(mut self, titles: &'a Map<'a, &'a str>) -> ActionBuilder<'a> {
+    pub fn titles(mut self, titles: Map<'a, &'a str>) -> ActionBuilder<'a> {
         self.titles = Some(titles);
         self
     }
@@ -93,7 +93,7 @@ impl<'a> ActionBuilder<'a> {
         self
     }
 
-    pub fn descriptions(mut self, descriptions: &'a Map<'a, &'a str>) -> ActionBuilder<'a> {
+    pub fn descriptions(mut self, descriptions: Map<'a, &'a str>) -> ActionBuilder<'a> {
         self.descriptions = Some(descriptions);
         self
     }
