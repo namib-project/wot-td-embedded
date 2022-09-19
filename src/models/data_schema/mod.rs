@@ -101,22 +101,27 @@ impl<'a> NestedJsonValue for DataSchema<'a> {
         index = self
             .titles
             .serialize_field("titles", buf, index, has_previous)?;
+        has_previous |= self.title.is_some();
 
         index = self
             .description
             .serialize_field("description", buf, index, has_previous)?;
+        has_previous |= self.title.is_some();
 
         index = self
             .descriptions
             .serialize_field("descriptions", buf, index, has_previous)?;
+        has_previous |= self.title.is_some();
 
-        // index = self
-        //     .constant
-        //     .serialize_field("constant", buf, index, has_previous)?;
+        index = self
+            .constant
+            .serialize_field("constant", buf, index, has_previous)?;
+        has_previous |= self.title.is_some();
 
-        // index = self
-        //     .default
-        //     .serialize_field("default", buf, index, has_previous)?;
+        index = self
+            .default
+            .serialize_field("default", buf, index, has_previous)?;
+        has_previous |= self.title.is_some();
 
         index = self
             .unit
@@ -125,33 +130,44 @@ impl<'a> NestedJsonValue for DataSchema<'a> {
         // index = self
         //     .one_of
         //     .serialize_field("oneOf", buf, index, has_previous)?;
+        has_previous |= self.title.is_some();
 
-        // index = self
-        //     .enumeration
-        //     .serialize_field("enum", buf, index, has_previous)?;
+        index = self
+            .enumeration
+            .serialize_field("enum", buf, index, has_previous)?;
+        has_previous |= self.title.is_some();
 
         index = self
             .read_only
             .serialize_field("readOnly", buf, index, has_previous)?;
+        has_previous |= self.title.is_some();
 
         index = self
             .write_only
             .serialize_field("writeOnly", buf, index, has_previous)?;
+        has_previous |= self.title.is_some();
 
         index = self
             .format
             .serialize_field("format", buf, index, has_previous)?;
+        has_previous |= self.title.is_some();
 
-        // index = self
-        //     .data_type
-        //     .serialize_field("type", buf, index, has_previous)?;
+        index = self
+            .data_type
+            .serialize_field("type", buf, index, has_previous)?;
+        has_previous |= self.title.is_some();
 
-        // if let Some(additional_fields) = self.additional_fields {
-        //     for additional_field in additional_fields.iter() {
-        //         additional_field.key.to_json_key(buf, index)?;
-        //         additional_field.value.to_json_value(buf, index)?;
-        //     }
-        // }
+        if let Some(additional_fields) = self.additional_fields.as_ref() {
+            for additional_field in additional_fields.iter() {
+                additional_field.value.serialize_field(
+                    additional_field.key,
+                    buf,
+                    index,
+                    has_previous,
+                )?;
+                has_previous = true;
+            }
+        }
 
         Ok(index)
     }
@@ -364,6 +380,24 @@ pub enum DataType<'a> {
     Null,
 }
 
+impl<'a> JsonValue for DataType<'a> {
+    fn to_json_value(
+        &self,
+        _buf: &mut [u8],
+        _index: usize,
+    ) -> Result<usize, crate::serialization::SerializationError> {
+        match self {
+            DataType::Object(_) => todo!(),
+            DataType::Array(_) => todo!(),
+            DataType::String(_) => todo!(),
+            DataType::Number(_) => todo!(),
+            DataType::Integer(_) => todo!(),
+            DataType::Boolean => todo!(),
+            DataType::Null => todo!(),
+        }
+    }
+}
+
 #[skip_serializing_none]
 #[derive(Serialize, Debug)]
 pub enum DataStructure<'a> {
@@ -373,4 +407,25 @@ pub enum DataStructure<'a> {
     Number(f64),
     Object(Map<'a, &'a DataStructure<'a>>),
     Array(Array<'a, &'a DataStructure<'a>>),
+}
+
+impl<'a> JsonValue for DataStructure<'a> {
+    fn to_json_value(
+        &self,
+        buf: &mut [u8],
+        index: usize,
+    ) -> Result<usize, crate::serialization::SerializationError> {
+        match self {
+            DataStructure::Null => "null".to_json_string(buf, index),
+            DataStructure::String(value) => value.to_json_value(buf, index),
+            DataStructure::Integer(value) => value.to_json_value(buf, index),
+            DataStructure::Number(value) => value.to_json_value(buf, index),
+            DataStructure::Object(_value) => {
+                todo!()
+            }
+            DataStructure::Array(_value) => {
+                todo!()
+            }
+        }
+    }
 }

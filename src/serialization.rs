@@ -38,6 +38,22 @@ impl JsonValue for &str {
     }
 }
 
+impl JsonValue for i64 {
+    fn to_json_value(&self, _buf: &mut [u8], index: usize) -> Result<usize, SerializationError> {
+        // TODO!
+
+        Ok(index)
+    }
+}
+
+impl JsonValue for f64 {
+    fn to_json_value(&self, _buf: &mut [u8], index: usize) -> Result<usize, SerializationError> {
+        // TODO!
+
+        Ok(index)
+    }
+}
+
 impl JsonKey for &str {
     fn to_json_key(self, buf: &mut [u8], index: usize) -> Result<usize, SerializationError>
     where
