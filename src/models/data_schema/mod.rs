@@ -21,7 +21,7 @@ use serde_with::skip_serializing_none;
 use crate::{
     constants::JSON_LD_TYPE,
     data_structures::{array::Array, map::Map},
-    serialization::{JsonKey, JsonString, JsonValue, SerializableField},
+    serialization::{JsonString, JsonValue, SerializableField},
     serialize_field,
 };
 

@@ -219,6 +219,14 @@ impl<'a> JsonValue for SecuritySchemeType<'a> {
             }
             SecuritySchemeType::Combo(security) => {
                 "combo".to_json_value(buf, index)?;
+                match &security.combo_variant {
+                    ComboVariant::OneOf(one_of) => {
+                        one_of.serialize_field("oneOf", buf, index, true)?;
+                    }
+                    ComboVariant::AllOf(all_of) => {
+                        all_of.serialize_field("allOf", buf, index, true)?;
+                    }
+                }
             }
             SecuritySchemeType::Basic(security) => {
                 "basic".to_json_value(buf, index)?;
