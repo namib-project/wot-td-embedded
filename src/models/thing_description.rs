@@ -273,7 +273,7 @@ impl<'a> ThingDescriptionBuilder<'a> {
 }
 
 impl<'a> ToJson for ThingDescription<'a> {
-    fn to_json(self, buf: &mut [u8]) -> Result<usize, crate::serialization::SerializationError> {
+    fn to_json(&self, buf: &mut [u8]) -> Result<usize, crate::serialization::SerializationError> {
         let mut new_index = self.context.serialize_field("@context", buf, 0, false)?;
 
         new_index = self.title.serialize_field("title", buf, new_index, true)?;

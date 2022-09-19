@@ -2,7 +2,7 @@
 pub struct SerializationError;
 
 pub trait ToJson {
-    fn to_json(self, buf: &mut [u8]) -> Result<usize, SerializationError>;
+    fn to_json(&self, buf: &mut [u8]) -> Result<usize, SerializationError>;
 }
 
 pub(crate) trait JsonKey {
