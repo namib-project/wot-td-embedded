@@ -100,15 +100,15 @@ impl<T: JsonValue> SerializableField for Option<T> {
 
 impl JsonString for &str {
     fn to_json_string(self, buf: &mut [u8], index: usize) -> Result<usize, SerializationError> {
-        if buf.len() - index - self.len() <= 0 {
+        if index + self.len() > buf.len() {
             return Err(SerializationError {});
         }
 
         let mut new_index = index;
 
-        for code_unit in self.as_bytes().into_iter() {
+        for code_unit in self.as_bytes().iter() {
             buf[new_index] = *code_unit;
-            new_index = new_index + 1;
+            new_index += 1;
         }
 
         Ok(new_index)
