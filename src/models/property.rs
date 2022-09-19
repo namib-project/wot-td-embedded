@@ -11,7 +11,10 @@
 
 use serde::{ser::SerializeMap, Serialize};
 
-use crate::data_structures::array::Array;
+use crate::{
+    data_structures::array::Array,
+    serialization::{JsonString, JsonValue, SerializableField},
+};
 
 use super::{data_schema::DataSchema, form::Form};
 
@@ -25,6 +28,26 @@ pub struct Property<'a> {
 impl<'a> Property<'a> {
     pub fn builder(forms: Array<'a, Form<'a>>, data_schema: DataSchema<'a>) -> PropertyBuilder<'a> {
         PropertyBuilder::new(forms, data_schema)
+    }
+}
+
+impl<'a> JsonValue for Property<'a> {
+    fn to_json_value(
+        &self,
+        buf: &mut [u8],
+        index: usize,
+    ) -> Result<usize, crate::serialization::SerializationError> {
+        let mut index = "{".to_json_string(buf, index)?;
+
+        index = self.forms.serialize_field("forms", buf, index, false)?;
+        index = self
+            .observable
+            .serialize_field("observable", buf, index, false)?;
+        // index = self.data_schema.serialize_nested_field(buf, index, false)?; // TODO: Implement
+
+        index = "}".to_json_string(buf, index)?;
+
+        Ok(index)
     }
 }
 

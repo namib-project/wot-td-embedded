@@ -12,7 +12,10 @@
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 
-use crate::data_structures::{array::Array, map::Map};
+use crate::{
+    data_structures::{array::Array, map::Map},
+    serialization::{JsonString, JsonValue, SerializableField, SerializationError},
+};
 
 use super::{data_schema::DataSchema, form::Form};
 
@@ -37,6 +40,48 @@ pub struct Action<'a> {
 impl<'a> Action<'a> {
     pub fn builder(forms: Array<'a, Form<'a>>) -> ActionBuilder<'a> {
         ActionBuilder::new(forms)
+    }
+}
+
+impl<'a> JsonValue for Action<'a> {
+    fn to_json_value(&self, buf: &mut [u8], index: usize) -> Result<usize, SerializationError> {
+        let mut index = "{".to_json_string(buf, index)?;
+
+        index = self.forms.serialize_field("forms", buf, index, false)?;
+
+        index = self
+            .json_ld_type
+            .serialize_field("@type", buf, index, true)?;
+
+        index = self.title.serialize_field("title", buf, index, true)?;
+
+        index = self.titles.serialize_field("titles", buf, index, true)?;
+
+        index = self
+            .description
+            .serialize_field("description", buf, index, true)?;
+
+        index = self
+            .descriptions
+            .serialize_field("descriptions", buf, index, true)?;
+
+        index = self.input.serialize_field("input", buf, index, true)?;
+
+        index = self.output.serialize_field("output", buf, index, true)?;
+
+        index = self.safe.serialize_field("safe", buf, index, true)?;
+
+        index = self
+            .idempotent
+            .serialize_field("idempotent", buf, index, true)?;
+
+        index = self
+            .synchronous
+            .serialize_field("synchronous", buf, index, true)?;
+
+        index = "}".to_json_string(buf, index)?;
+
+        Ok(index)
     }
 }
 

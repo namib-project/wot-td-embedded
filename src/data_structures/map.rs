@@ -90,21 +90,21 @@ impl<'a, T: JsonValue> JsonValue for MapEntry<'a, T> {
         index: usize,
     ) -> Result<usize, crate::serialization::SerializationError> {
         let mut has_previous = false;
-        let mut new_index = index;
+        let mut index = index;
 
-        new_index = "{".to_json_string(buf, new_index)?;
+        index = "{".to_json_string(buf, index)?;
 
         for entry in self.iter() {
             if has_previous {
-                new_index = ",".to_json_string(buf, new_index)?;
+                index = ",".to_json_string(buf, index)?;
             }
-            new_index = entry.key.to_json_key(buf, new_index)?;
-            new_index = entry.value.to_json_value(buf, new_index)?;
+            index = entry.key.to_json_key(buf, index)?;
+            index = entry.value.to_json_value(buf, index)?;
             has_previous = true;
         }
 
-        new_index = "}".to_json_string(buf, new_index)?;
+        index = "}".to_json_string(buf, index)?;
 
-        Ok(new_index)
+        Ok(index)
     }
 }

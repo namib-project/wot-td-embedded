@@ -21,6 +21,7 @@ use serde_with::skip_serializing_none;
 use crate::{
     constants::JSON_LD_TYPE,
     data_structures::{array::Array, map::Map},
+    serialization::{JsonKey, JsonString, JsonValue, SerializableField},
     serialize_field,
 };
 
@@ -61,6 +62,87 @@ impl<'a> DataSchema<'a> {
         DataSchemaBuilder {
             ..Default::default()
         }
+    }
+}
+
+impl<'a> JsonValue for DataSchema<'a> {
+    fn to_json_value(
+        &self,
+        buf: &mut [u8],
+        index: usize,
+    ) -> Result<usize, crate::serialization::SerializationError> {
+        let mut index = "{".to_json_string(buf, index)?;
+
+        let mut has_previous = false;
+
+        index = self
+            .json_ld_type
+            .serialize_field("@type", buf, index, has_previous)?;
+        has_previous |= self.json_ld_type.is_some();
+
+        index = self
+            .title
+            .serialize_field("title", buf, index, has_previous)?;
+        has_previous |= self.title.is_some();
+
+        index = self
+            .titles
+            .serialize_field("titles", buf, index, has_previous)?;
+
+        index = self
+            .description
+            .serialize_field("description", buf, index, has_previous)?;
+
+        index = self
+            .descriptions
+            .serialize_field("descriptions", buf, index, has_previous)?;
+
+        // index = self
+        //     .constant
+        //     .serialize_field("constant", buf, index, has_previous)?;
+
+        // index = self
+        //     .default
+        //     .serialize_field("default", buf, index, has_previous)?;
+
+        index = self
+            .unit
+            .serialize_field("unit", buf, index, has_previous)?;
+
+        // index = self
+        //     .one_of
+        //     .serialize_field("oneOf", buf, index, has_previous)?;
+
+        // index = self
+        //     .enumeration
+        //     .serialize_field("enum", buf, index, has_previous)?;
+
+        index = self
+            .read_only
+            .serialize_field("readOnly", buf, index, has_previous)?;
+
+        index = self
+            .write_only
+            .serialize_field("writeOnly", buf, index, has_previous)?;
+
+        index = self
+            .format
+            .serialize_field("format", buf, index, has_previous)?;
+
+        // index = self
+        //     .data_type
+        //     .serialize_field("type", buf, index, has_previous)?;
+
+        // if let Some(additional_fields) = self.additional_fields {
+        //     for additional_field in additional_fields.iter() {
+        //         additional_field.key.to_json_key(buf, index)?;
+        //         additional_field.value.to_json_value(buf, index)?;
+        //     }
+        // }
+
+        index = "}".to_json_string(buf, index)?;
+
+        Ok(index)
     }
 }
 

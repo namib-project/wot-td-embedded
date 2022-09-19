@@ -23,6 +23,7 @@ use serde::{ser::SerializeMap, Serialize};
 use crate::{
     constants::JSON_LD_TYPE,
     data_structures::{array::Array, map::Map},
+    serialization::{JsonString, JsonValue, SerializableField, SerializationError},
     serialize_field,
 };
 
@@ -46,6 +47,22 @@ pub struct SecurityScheme<'a> {
 impl<'a> SecurityScheme<'a> {
     pub fn builder(scheme: SecuritySchemeType<'a>) -> SecuritySchemeBuilder<'a> {
         SecuritySchemeBuilder::new(scheme)
+    }
+}
+
+impl<'a> JsonValue for SecurityScheme<'a> {
+    fn to_json_value(
+        &self,
+        buf: &mut [u8],
+        index: usize,
+    ) -> Result<usize, crate::serialization::SerializationError> {
+        let mut index = "{".to_json_string(buf, index)?;
+
+        index = self.scheme.serialize_field("scheme", buf, index, false)?;
+
+        index = "}".to_json_string(buf, index)?;
+
+        Ok(index)
     }
 }
 

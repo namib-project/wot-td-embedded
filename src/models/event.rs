@@ -12,7 +12,10 @@
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 
-use crate::data_structures::{array::Array, map::Map};
+use crate::{
+    data_structures::{array::Array, map::Map},
+    serialization::{JsonString, JsonValue, SerializableField, SerializationError},
+};
 
 use super::{data_schema::DataSchema, form::Form};
 
@@ -35,6 +38,48 @@ pub struct Event<'a> {
 impl<'a> Event<'a> {
     pub fn builder(forms: Array<'a, Form<'a>>) -> EventBuilder<'a> {
         EventBuilder::new(forms)
+    }
+}
+
+impl<'a> JsonValue for Event<'a> {
+    fn to_json_value(&self, buf: &mut [u8], index: usize) -> Result<usize, SerializationError> {
+        let mut index = "{".to_json_string(buf, index)?;
+
+        index = self.forms.serialize_field("forms", buf, index, false)?;
+
+        index = self
+            .json_ld_type
+            .serialize_field("@type", buf, index, true)?;
+
+        index = self.title.serialize_field("title", buf, index, true)?;
+
+        index = self.titles.serialize_field("titles", buf, index, true)?;
+
+        index = self
+            .description
+            .serialize_field("description", buf, index, true)?;
+
+        index = self
+            .descriptions
+            .serialize_field("descriptions", buf, index, true)?;
+
+        index = self
+            .subscription
+            .serialize_field("subscription", buf, index, true)?;
+
+        index = self.data.serialize_field("data", buf, index, true)?;
+
+        index = self
+            .data_response
+            .serialize_field("dataResponse", buf, index, true)?;
+
+        index = self
+            .cancellation
+            .serialize_field("cancellation", buf, index, true)?;
+
+        index = "}".to_json_string(buf, index)?;
+
+        Ok(index)
     }
 }
 

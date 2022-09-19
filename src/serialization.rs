@@ -19,13 +19,13 @@ pub(crate) trait JsonString {
 
 impl JsonValue for &str {
     fn to_json_value(&self, buf: &mut [u8], index: usize) -> Result<usize, SerializationError> {
-        let mut new_index = "\"".to_json_string(buf, index)?;
+        let mut index = "\"".to_json_string(buf, index)?;
 
-        new_index = self.to_json_string(buf, new_index)?;
+        index = self.to_json_string(buf, index)?;
 
-        new_index = "\"".to_json_string(buf, new_index)?;
+        index = "\"".to_json_string(buf, index)?;
 
-        Ok(new_index)
+        Ok(index)
     }
 }
 
@@ -34,13 +34,13 @@ impl JsonKey for &str {
     where
         Self: Sized,
     {
-        let mut new_index = index;
+        let mut index = index;
 
-        new_index = self.to_json_value(buf, new_index)?;
+        index = self.to_json_value(buf, index)?;
 
-        new_index = ":".to_json_string(buf, new_index)?;
+        index = ":".to_json_string(buf, index)?;
 
-        Ok(new_index)
+        Ok(index)
     }
 }
 
@@ -62,16 +62,16 @@ impl<T: JsonValue> SerializableField for T {
         index: usize,
         has_previous: bool,
     ) -> Result<usize, SerializationError> {
-        let mut new_index = index;
+        let mut index = index;
 
         if has_previous {
-            new_index = ",".to_json_string(buf, index)?;
+            index = ",".to_json_string(buf, index)?;
         }
 
-        new_index = key.to_json_key(buf, new_index)?;
-        new_index = self.to_json_value(buf, new_index)?;
+        index = key.to_json_key(buf, index)?;
+        index = self.to_json_value(buf, index)?;
 
-        Ok(new_index)
+        Ok(index)
     }
 }
 
@@ -83,18 +83,18 @@ impl<T: JsonValue> SerializableField for Option<T> {
         index: usize,
         has_previous: bool,
     ) -> Result<usize, SerializationError> {
-        let mut new_index = index;
+        let mut index = index;
 
         if let Some(value) = self {
             if has_previous {
-                new_index = ",".to_json_string(buf, index)?;
+                index = ",".to_json_string(buf, index)?;
             }
 
-            new_index = key.to_json_key(buf, new_index)?;
-            new_index = value.to_json_value(buf, new_index)?;
+            index = key.to_json_key(buf, index)?;
+            index = value.to_json_value(buf, index)?;
         }
 
-        Ok(new_index)
+        Ok(index)
     }
 }
 
@@ -104,13 +104,23 @@ impl JsonString for &str {
             return Err(SerializationError {});
         }
 
-        let mut new_index = index;
+        let mut index = index;
 
         for code_unit in self.as_bytes().iter() {
-            buf[new_index] = *code_unit;
-            new_index += 1;
+            buf[index] = *code_unit;
+            index += 1;
         }
 
-        Ok(new_index)
+        Ok(index)
+    }
+}
+
+impl JsonValue for bool {
+    fn to_json_value(&self, buf: &mut [u8], index: usize) -> Result<usize, SerializationError> {
+        if *self {
+            "true".to_json_string(buf, index)
+        } else {
+            "false".to_json_string(buf, index)
+        }
     }
 }

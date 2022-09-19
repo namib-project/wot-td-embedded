@@ -12,6 +12,8 @@
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 
+use crate::serialization::{JsonString, JsonValue, SerializableField, SerializationError};
+
 #[skip_serializing_none]
 #[derive(Serialize, Debug, Default)]
 pub struct VersionInfo<'a> {
@@ -61,6 +63,22 @@ impl<'a> VersionInfoBuilder<'a> {
             instance: self.instance,
             model: self.model,
         }
+    }
+}
+
+impl<'a> JsonValue for VersionInfo<'a> {
+    fn to_json_value(&self, buf: &mut [u8], index: usize) -> Result<usize, SerializationError> {
+        let mut index = "{".to_json_string(buf, index)?;
+
+        index = self
+            .instance
+            .serialize_field("instance", buf, index, false)?;
+
+        index = self.model.serialize_field("model", buf, index, true)?;
+
+        index = "}".to_json_string(buf, index)?;
+
+        Ok(index)
     }
 }
 

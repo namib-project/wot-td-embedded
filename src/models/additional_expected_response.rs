@@ -11,6 +11,8 @@
 
 use serde::Serialize;
 
+use crate::serialization::{JsonString, JsonValue, SerializableField};
+
 #[derive(Serialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct AdditionalExpectedResponse<'a> {
@@ -22,6 +24,32 @@ pub struct AdditionalExpectedResponse<'a> {
 impl<'a> AdditionalExpectedResponse<'a> {
     pub fn builder() -> AdditionalExpectedResponseBuilder<'a> {
         AdditionalExpectedResponseBuilder::new()
+    }
+}
+
+impl<'a> JsonValue for AdditionalExpectedResponse<'a> {
+    fn to_json_value(
+        &self,
+        buf: &mut [u8],
+        index: usize,
+    ) -> Result<usize, crate::serialization::SerializationError> {
+        let mut index = "{".to_json_string(buf, index)?;
+
+        index = self.success.serialize_field("success", buf, index, false)?;
+        let mut has_previous = self.success.is_some();
+
+        index = self
+            .content_type
+            .serialize_field("contentType", buf, index, has_previous)?;
+        has_previous |= self.content_type.is_some();
+
+        index = self
+            .schema
+            .serialize_field("schema", buf, index, has_previous)?;
+
+        index = "}".to_json_string(buf, index)?;
+
+        Ok(index)
     }
 }
 

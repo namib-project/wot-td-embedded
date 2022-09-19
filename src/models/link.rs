@@ -105,29 +105,25 @@ impl<'a> LinkBuilder<'a> {
 
 impl<'a> JsonValue for Link<'a> {
     fn to_json_value(&self, buf: &mut [u8], index: usize) -> Result<usize, SerializationError> {
-        let mut new_index = "{".to_json_string(buf, index)?;
+        let mut index = "{".to_json_string(buf, index)?;
 
-        new_index = self.href.serialize_field("href", buf, new_index, false)?;
+        index = self.href.serialize_field("href", buf, index, false)?;
 
-        new_index = self
-            .link_type
-            .serialize_field("@type", buf, new_index, true)?;
+        index = self.link_type.serialize_field("@type", buf, index, true)?;
 
-        new_index = self.rel.serialize_field("rel", buf, new_index, true)?;
+        index = self.rel.serialize_field("rel", buf, index, true)?;
 
-        new_index = self
-            .anchor
-            .serialize_field("anchor", buf, new_index, true)?;
+        index = self.anchor.serialize_field("anchor", buf, index, true)?;
 
-        new_index = self.sizes.serialize_field("sizes", buf, new_index, true)?;
+        index = self.sizes.serialize_field("sizes", buf, index, true)?;
 
-        new_index = self
+        index = self
             .hreflang
-            .serialize_field("hreflang", buf, new_index, true)?;
+            .serialize_field("hreflang", buf, index, true)?;
 
-        new_index = "}".to_json_string(buf, new_index)?;
+        index = "}".to_json_string(buf, index)?;
 
-        Ok(new_index)
+        Ok(index)
     }
 }
 

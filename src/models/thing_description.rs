@@ -280,11 +280,65 @@ impl<'a> ToJson for ThingDescription<'a> {
             .context
             .serialize_field("@context", buf, index, false)?;
 
+        index = self
+            .json_ld_type
+            .serialize_field("@type", buf, index, true)?;
+
+        index = self.id.serialize_field("id", buf, index, true)?;
+
         index = self.title.serialize_field("title", buf, index, true)?;
+
+        index = self.titles.serialize_field("titles", buf, index, true)?;
 
         index = self
             .description
             .serialize_field("description", buf, index, true)?;
+
+        index = self
+            .descriptions
+            .serialize_field("descriptions", buf, index, true)?;
+
+        index = self.version.serialize_field("version", buf, index, true)?;
+
+        index = self.created.serialize_field("created", buf, index, true)?;
+
+        index = self
+            .modified
+            .serialize_field("modified", buf, index, true)?;
+
+        index = self.support.serialize_field("support", buf, index, true)?;
+
+        index = self.base.serialize_field("base", buf, index, true)?;
+
+        index = self
+            .properties
+            .serialize_field("properties", buf, index, true)?;
+
+        index = self.actions.serialize_field("actions", buf, index, true)?;
+
+        index = self.events.serialize_field("events", buf, index, true)?;
+
+        index = self.links.serialize_field("links", buf, index, true)?;
+
+        index = self.forms.serialize_field("forms", buf, index, true)?;
+
+        index = self
+            .security
+            .serialize_field("security", buf, index, true)?;
+
+        index =
+            self.security_definitions
+                .serialize_field("securityDefinitions", buf, index, true)?;
+
+        index = self.profile.serialize_field("profile", buf, index, true)?;
+
+        index = self
+            .schema_definitions
+            .serialize_field("schemaDefinitions", buf, index, true)?;
+
+        index = self
+            .uri_variables
+            .serialize_field("uriVariables", buf, index, true)?;
 
         index = "}".to_json_string(buf, index)?;
 
