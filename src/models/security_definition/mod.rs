@@ -208,6 +208,87 @@ impl<'a> Serialize for SecurityScheme<'a> {
     }
 }
 
+impl<'a> JsonValue for SecuritySchemeType<'a> {
+    fn to_json_value(&self, buf: &mut [u8], index: usize) -> Result<usize, SerializationError> {
+        match self {
+            SecuritySchemeType::Nosec => {
+                "nosec".to_json_value(buf, index)?;
+            }
+            SecuritySchemeType::Auto => {
+                "auto".to_json_value(buf, index)?;
+            }
+            SecuritySchemeType::Combo(security) => {
+                "combo".to_json_value(buf, index)?;
+            }
+            SecuritySchemeType::Basic(security) => {
+                "basic".to_json_value(buf, index)?;
+                security.name.serialize_field("name", buf, index, true)?;
+                security.r#in.serialize_field("in", buf, index, true)?;
+            }
+            SecuritySchemeType::Digest(security) => {
+                "digest".to_json_value(buf, index)?;
+                security.name.serialize_field("name", buf, index, true)?;
+                security.r#in.serialize_field("in", buf, index, true)?;
+                security.qop.serialize_field("qop", buf, index, true)?;
+            }
+            SecuritySchemeType::Apikey(security) => {
+                "apikey".to_json_value(buf, index)?;
+                security.name.serialize_field("name", buf, index, true)?;
+                security.r#in.serialize_field("in", buf, index, true)?;
+            }
+            SecuritySchemeType::Bearer(security) => {
+                "bearer".to_json_value(buf, index)?;
+                security
+                    .authorization
+                    .serialize_field("name", buf, index, true)?;
+                security.name.serialize_field("name", buf, index, true)?;
+                security.alg.serialize_field("alg", buf, index, true)?;
+                security
+                    .format
+                    .serialize_field("format", buf, index, true)?;
+                security.r#in.serialize_field("in", buf, index, true)?;
+            }
+            SecuritySchemeType::Psk(security) => {
+                "psk".to_json_value(buf, index)?;
+                security
+                    .identity
+                    .serialize_field("identity", buf, index, true)?;
+            }
+            SecuritySchemeType::Oauth2(security) => {
+                "oauth2".to_json_value(buf, index)?;
+                security.flow.serialize_field("flow", buf, index, true)?;
+                security
+                    .authorization
+                    .serialize_field("authorization", buf, index, true)?;
+                security.token.serialize_field("token", buf, index, true)?;
+                security
+                    .refresh
+                    .serialize_field("refresh", buf, index, true)?;
+                security
+                    .scopes
+                    .serialize_field("scopes", buf, index, true)?;
+            }
+            SecuritySchemeType::Ace(security) => {
+                "ace:ACESecurityScheme".to_json_value(buf, index)?;
+                security
+                    .authorization_server
+                    .serialize_field("ace:as", buf, index, true)?;
+                security
+                    .audience
+                    .serialize_field("ace:audience", buf, index, true)?;
+                security
+                    .scopes
+                    .serialize_field("ace:scopes", buf, index, true)?;
+                security
+                    .cnonce
+                    .serialize_field("ace:cnonce", buf, index, true)?;
+            }
+        }
+
+        Ok(index)
+    }
+}
+
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum In {
@@ -218,9 +299,30 @@ pub enum In {
     Auto,
 }
 
+impl JsonValue for In {
+    fn to_json_value(&self, buf: &mut [u8], index: usize) -> Result<usize, SerializationError> {
+        match self {
+            In::Header => "header".to_json_value(buf, index),
+            In::Query => "query".to_json_value(buf, index),
+            In::Body => "body".to_json_value(buf, index),
+            In::Cookie => "cookie".to_json_value(buf, index),
+            In::Auto => "auto".to_json_value(buf, index),
+        }
+    }
+}
+
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum QoP {
     Auth,
     AuthInt,
+}
+
+impl JsonValue for QoP {
+    fn to_json_value(&self, buf: &mut [u8], index: usize) -> Result<usize, SerializationError> {
+        match self {
+            QoP::Auth => "auth".to_json_value(buf, index),
+            QoP::AuthInt => "auth-int".to_json_value(buf, index),
+        }
+    }
 }
