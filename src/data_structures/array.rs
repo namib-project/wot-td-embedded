@@ -11,6 +11,8 @@
 
 use serde::{ser::SerializeSeq, Serialize};
 
+use crate::serialization::{JsonString, JsonValue, SerializableField, SerializationError};
+
 pub type Array<'a, T> = ArrayEntry<'a, T>;
 
 #[derive(Debug, Default)]
@@ -69,3 +71,49 @@ impl<'a, T: Serialize> Serialize for ArrayEntry<'a, T> {
         sequence.end()
     }
 }
+
+impl<'a, T: JsonValue> JsonValue for ArrayEntry<'a, T> {
+    fn to_json_value(
+        &self,
+        buf: &mut [u8],
+        index: usize,
+    ) -> Result<usize, crate::serialization::SerializationError> {
+        let mut has_previous = false;
+        let mut new_index = index;
+
+        new_index = "[".to_json_string(buf, new_index)?;
+
+        for entry in self.iter() {
+            if has_previous {
+                new_index = ",".to_json_string(buf, new_index)?;
+            }
+            new_index = entry.to_json_value(buf, new_index)?;
+            has_previous = true;
+        }
+
+        new_index = "]".to_json_string(buf, new_index)?;
+
+        Ok(new_index)
+    }
+}
+
+// impl<'a, T: JsonValue> SerializableField for ArrayEntry<'a, T> {
+//     fn serialize_field(
+//         &self,
+//         key: &str,
+//         buf: &mut [u8],
+//         index: usize,
+//         has_previous: bool,
+//     ) -> Result<usize, SerializationError> {
+//         let mut new_index = index;
+
+//         if has_previous {
+//             new_index = ",".to_json_string(buf, index)?;
+//         }
+
+//         new_index = key.to_json_key(buf, new_index)?;
+//         new_index = self.to_json_value(buf, new_index)?;
+
+//         Ok(new_index)
+//     }
+// }

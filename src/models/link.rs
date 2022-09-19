@@ -12,7 +12,10 @@
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 
-use crate::data_structures::array::Array;
+use crate::{
+    data_structures::array::Array,
+    serialization::{JsonString, JsonValue, SerializableField, SerializationError},
+};
 
 #[skip_serializing_none]
 #[derive(Serialize, Debug, Default)]
@@ -78,6 +81,11 @@ impl<'a> LinkBuilder<'a> {
         self
     }
 
+    pub fn sizes(mut self, sizes: &'a str) -> LinkBuilder<'a> {
+        self.sizes = Some(sizes);
+        self
+    }
+
     pub fn hreflang(mut self, hreflang: Array<'a, &'a str>) -> LinkBuilder<'a> {
         self.hreflang = Some(hreflang);
         self
@@ -95,11 +103,42 @@ impl<'a> LinkBuilder<'a> {
     }
 }
 
+impl<'a> JsonValue for Link<'a> {
+    fn to_json_value(&self, buf: &mut [u8], index: usize) -> Result<usize, SerializationError> {
+        let mut new_index = "{".to_json_string(buf, index)?;
+
+        new_index = self.href.serialize_field("href", buf, new_index, false)?;
+
+        new_index = self
+            .link_type
+            .serialize_field("@type", buf, new_index, true)?;
+
+        new_index = self.rel.serialize_field("rel", buf, new_index, true)?;
+
+        new_index = self
+            .anchor
+            .serialize_field("anchor", buf, new_index, true)?;
+
+        new_index = self.sizes.serialize_field("sizes", buf, new_index, true)?;
+
+        new_index = self
+            .hreflang
+            .serialize_field("hreflang", buf, new_index, true)?;
+
+        new_index = "}".to_json_string(buf, new_index)?;
+
+        Ok(new_index)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use serde_json_core::{heapless::String, ser::Error, to_string};
 
-    use crate::data_structures::array::Array;
+    use crate::{
+        data_structures::array::Array,
+        serialization::{JsonValue, SerializationError},
+    };
 
     use super::Link;
 
@@ -107,7 +146,7 @@ mod tests {
     fn serialize() -> Result<(), Error> {
         let hreflang = Array::<&str>::new("de");
 
-        let additional_expected_response = Link::builder("coap://example.org")
+        let link = Link::builder("coap://example.org")
             .link_type("test:testLink")
             .rel("test")
             .anchor("test")
@@ -115,9 +154,29 @@ mod tests {
             .build();
 
         let expected_result = r#"{"href":"coap://example.org","@type":"test:testLink","rel":"test","anchor":"test","hreflang":["de"]}"#;
-        let actual_result: String<100> = to_string(&additional_expected_response)?;
+        let actual_result: String<100> = to_string(&link)?;
 
         assert_eq!(expected_result, actual_result.as_str());
+        Ok(())
+    }
+
+    #[test]
+    fn serialize_to_buffer() -> Result<(), SerializationError> {
+        let hreflang = Array::<&str>::new("de");
+
+        let link = Link::builder("coap://example.org")
+            .link_type("test:testLink")
+            .rel("test")
+            .anchor("test")
+            .hreflang(hreflang)
+            .build();
+
+        let mut buffer: [u8; 200] = [0; 200];
+
+        let length = link.to_json_value(&mut buffer, 0)?;
+
+        assert_eq!(r#"{"href":"coap://example.org","@type":"test:testLink","rel":"test","anchor":"test","hreflang":["de"]}"#.as_bytes(), &buffer[0..length]);
+
         Ok(())
     }
 }

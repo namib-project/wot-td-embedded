@@ -15,6 +15,7 @@ use serde_with::skip_serializing_none;
 use crate::{
     constants::WOT_TD_11_CONTEXT,
     data_structures::{array::Array, map::Map},
+    serialization::{JsonString, JsonValue, SerializableField, SerializationError, ToJson},
 };
 
 use super::{
@@ -32,6 +33,15 @@ pub enum ContextEntry<'a> {
 impl<'a> Default for ContextEntry<'a> {
     fn default() -> Self {
         ContextEntry::StringEntry(WOT_TD_11_CONTEXT)
+    }
+}
+
+impl<'a> JsonValue for ContextEntry<'a> {
+    fn to_json_value(&self, buf: &mut [u8], index: usize) -> Result<usize, SerializationError> {
+        match self {
+            ContextEntry::StringEntry(string_entry) => string_entry.to_json_value(buf, index),
+            ContextEntry::MapEntry(map_entry) => map_entry.to_json_value(buf, index),
+        }
     }
 }
 
@@ -259,6 +269,26 @@ impl<'a> ThingDescriptionBuilder<'a> {
             uri_variables: self.uri_variables,
             security_definitions: self.security_definitions,
         }
+    }
+}
+
+impl<'a> ToJson for ThingDescription<'a> {
+    fn to_json(
+        self,
+        buf: &mut [u8],
+        index: usize,
+    ) -> Result<usize, crate::serialization::SerializationError> {
+        let mut new_index = self
+            .context
+            .serialize_field("@context", buf, index, false)?;
+
+        new_index = self.title.serialize_field("title", buf, new_index, true)?;
+
+        new_index = self
+            .description
+            .serialize_field("description", buf, new_index, true)?;
+
+        Ok(new_index)
     }
 }
 

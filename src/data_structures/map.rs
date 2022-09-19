@@ -11,6 +11,8 @@
 
 use serde::{ser::SerializeMap, Serialize};
 
+use crate::serialization::{JsonKey, JsonString, JsonValue};
+
 pub type Map<'a, T> = MapEntry<'a, T>;
 
 #[derive(Debug, Default)]
@@ -78,5 +80,31 @@ impl<'a, T: Serialize> Serialize for MapEntry<'a, T> {
         }
 
         sequence.end()
+    }
+}
+
+impl<'a, T: JsonValue> JsonValue for MapEntry<'a, T> {
+    fn to_json_value(
+        &self,
+        buf: &mut [u8],
+        index: usize,
+    ) -> Result<usize, crate::serialization::SerializationError> {
+        let mut has_previous = false;
+        let mut new_index = index;
+
+        new_index = "{".to_json_string(buf, new_index)?;
+
+        for entry in self.iter() {
+            if has_previous {
+                new_index = ",".to_json_string(buf, new_index)?;
+            }
+            new_index = entry.key.to_json_key(buf, new_index)?;
+            new_index = entry.value.to_json_value(buf, new_index)?;
+            has_previous = true;
+        }
+
+        new_index = "}".to_json_string(buf, new_index)?;
+
+        Ok(new_index)
     }
 }
