@@ -11,7 +11,7 @@
 
 use serde::{ser::SerializeSeq, Serialize};
 
-use crate::serialization::{JsonString, JsonValue, SerializableField, SerializationError};
+use crate::serialization::{JsonString, JsonValue};
 
 pub type Array<'a, T> = ArrayEntry<'a, T>;
 
@@ -96,24 +96,3 @@ impl<'a, T: JsonValue> JsonValue for ArrayEntry<'a, T> {
         Ok(new_index)
     }
 }
-
-// impl<'a, T: JsonValue> SerializableField for ArrayEntry<'a, T> {
-//     fn serialize_field(
-//         &self,
-//         key: &str,
-//         buf: &mut [u8],
-//         index: usize,
-//         has_previous: bool,
-//     ) -> Result<usize, SerializationError> {
-//         let mut new_index = index;
-
-//         if has_previous {
-//             new_index = ",".to_json_string(buf, index)?;
-//         }
-
-//         new_index = key.to_json_key(buf, new_index)?;
-//         new_index = self.to_json_value(buf, new_index)?;
-
-//         Ok(new_index)
-//     }
-// }

@@ -15,7 +15,7 @@ use serde_with::skip_serializing_none;
 use crate::{
     constants::WOT_TD_11_CONTEXT,
     data_structures::{array::Array, map::Map},
-    serialization::{JsonString, JsonValue, SerializableField, SerializationError, ToJson},
+    serialization::{JsonValue, SerializableField, SerializationError, ToJson},
 };
 
 use super::{
@@ -273,14 +273,8 @@ impl<'a> ThingDescriptionBuilder<'a> {
 }
 
 impl<'a> ToJson for ThingDescription<'a> {
-    fn to_json(
-        self,
-        buf: &mut [u8],
-        index: usize,
-    ) -> Result<usize, crate::serialization::SerializationError> {
-        let mut new_index = self
-            .context
-            .serialize_field("@context", buf, index, false)?;
+    fn to_json(self, buf: &mut [u8]) -> Result<usize, crate::serialization::SerializationError> {
+        let mut new_index = self.context.serialize_field("@context", buf, 0, false)?;
 
         new_index = self.title.serialize_field("title", buf, new_index, true)?;
 
