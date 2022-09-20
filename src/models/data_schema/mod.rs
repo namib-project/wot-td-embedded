@@ -101,61 +101,62 @@ impl<'a> NestedJsonValue for DataSchema<'a> {
         index = self
             .titles
             .serialize_field("titles", buf, index, has_previous)?;
-        has_previous |= self.title.is_some();
+        has_previous |= self.titles.is_some();
 
         index = self
             .description
             .serialize_field("description", buf, index, has_previous)?;
-        has_previous |= self.title.is_some();
+        has_previous |= self.description.is_some();
 
         index = self
             .descriptions
             .serialize_field("descriptions", buf, index, has_previous)?;
-        has_previous |= self.title.is_some();
+        has_previous |= self.descriptions.is_some();
 
         index = self
             .constant
             .serialize_field("constant", buf, index, has_previous)?;
-        has_previous |= self.title.is_some();
+        has_previous |= self.constant.is_some();
 
         index = self
             .default
             .serialize_field("default", buf, index, has_previous)?;
-        has_previous |= self.title.is_some();
+        has_previous |= self.default.is_some();
 
         index = self
             .unit
             .serialize_field("unit", buf, index, has_previous)?;
+        has_previous |= self.unit.is_some();
 
         // index = self
         //     .one_of
         //     .serialize_field("oneOf", buf, index, has_previous)?;
-        has_previous |= self.title.is_some();
+        has_previous |= self.one_of.is_some();
 
         index = self
             .enumeration
             .serialize_field("enum", buf, index, has_previous)?;
-        has_previous |= self.title.is_some();
+        has_previous |= self.enumeration.is_some();
 
         index = self
             .read_only
             .serialize_field("readOnly", buf, index, has_previous)?;
-        has_previous |= self.title.is_some();
+        has_previous |= self.read_only.is_some();
 
         index = self
             .write_only
             .serialize_field("writeOnly", buf, index, has_previous)?;
-        has_previous |= self.title.is_some();
+        has_previous |= self.write_only.is_some();
 
         index = self
             .format
             .serialize_field("format", buf, index, has_previous)?;
-        has_previous |= self.title.is_some();
+        has_previous |= self.format.is_some();
 
         index = self
             .data_type
             .serialize_field("type", buf, index, has_previous)?;
-        has_previous |= self.title.is_some();
+        has_previous |= self.data_type.is_some();
 
         if let Some(additional_fields) = self.additional_fields.as_ref() {
             for additional_field in additional_fields.iter() {
@@ -415,17 +416,15 @@ impl<'a> JsonValue for DataStructure<'a> {
         buf: &mut [u8],
         index: usize,
     ) -> Result<usize, crate::serialization::SerializationError> {
+        let mut index = index;
+
         match self {
             DataStructure::Null => "null".to_json_string(buf, index),
             DataStructure::String(value) => value.to_json_value(buf, index),
             DataStructure::Integer(value) => value.to_json_value(buf, index),
             DataStructure::Number(value) => value.to_json_value(buf, index),
-            DataStructure::Object(_value) => {
-                todo!()
-            }
-            DataStructure::Array(_value) => {
-                todo!()
-            }
+            DataStructure::Object(value) => value.to_json_value(buf, index),
+            DataStructure::Array(value) => value.to_json_value(buf, index),
         }
     }
 }

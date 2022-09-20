@@ -96,3 +96,29 @@ impl<'a, T: JsonValue> JsonValue for ArrayEntry<'a, T> {
         Ok(index)
     }
 }
+
+impl<'a, T: JsonValue> JsonValue for &'a ArrayEntry<'a, &T> {
+    fn to_json_value(
+        &self,
+        buf: &mut [u8],
+        index: usize,
+    ) -> Result<usize, crate::serialization::SerializationError> {
+        // TODO: Refactor
+        let mut has_previous = false;
+        let mut index = index;
+
+        index = "[".to_json_string(buf, index)?;
+
+        for entry in self.iter() {
+            if has_previous {
+                index = ",".to_json_string(buf, index)?;
+            }
+            index = entry.to_json_value(buf, index)?;
+            has_previous = true;
+        }
+
+        index = "]".to_json_string(buf, index)?;
+
+        Ok(index)
+    }
+}
