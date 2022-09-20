@@ -39,16 +39,20 @@ impl JsonValue for &str {
 }
 
 impl JsonValue for i64 {
-    fn to_json_value(&self, _buf: &mut [u8], index: usize) -> Result<usize, SerializationError> {
-        // TODO!
+    fn to_json_value(&self, buf: &mut [u8], index: usize) -> Result<usize, SerializationError> {
+        let index = itoa::Buffer::new()
+            .format(*self)
+            .to_json_string(buf, index)?;
 
         Ok(index)
     }
 }
 
 impl JsonValue for f64 {
-    fn to_json_value(&self, _buf: &mut [u8], index: usize) -> Result<usize, SerializationError> {
-        // TODO!
+    fn to_json_value(&self, buf: &mut [u8], index: usize) -> Result<usize, SerializationError> {
+        let index = ryu::Buffer::new()
+            .format(*self)
+            .to_json_string(buf, index)?;
 
         Ok(index)
     }

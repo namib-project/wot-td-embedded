@@ -8,6 +8,8 @@ license = "MIT OR Apache-2.0"
 keywords = ["web-of-things", "webofthings", "wot", "iot", "embedded", "no_std"]
 
 [dependencies]
+itoa = "1.0.3"
+ryu = "1.0.11"
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 serde_derive = "1.0.144"
 serde_with = { version = "2.0.0", default-features = false, features = ["macros"] }
