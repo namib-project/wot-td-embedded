@@ -9,8 +9,7 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use crate::serialize_field;
-use serde::ser::SerializeMap;
+use crate::models::serialize_field;
 
 #[derive(Debug)]
 pub struct IntegerSchema {
@@ -26,11 +25,11 @@ impl IntegerSchema {
     where
         S: serde::Serializer,
     {
-        serialize_field!("minimum", &self.minimum, map);
-        serialize_field!("maximum", &self.maximum, map);
-        serialize_field!("exclusiveMinimum", &self.exclusive_minimum, map);
-        serialize_field!("exclusiveMaximum", &self.exclusive_maximum, map);
-        serialize_field!("multipleOf", &self.multiple_of, map);
+        serialize_field::<i64, S>(&self.minimum, "minimum", &mut map)?;
+        serialize_field::<i64, S>(&self.maximum, "maximum", &mut map)?;
+        serialize_field::<i64, S>(&self.exclusive_minimum, "exclusiveMinimum", &mut map)?;
+        serialize_field::<i64, S>(&self.exclusive_maximum, "exclusiveMaximum", &mut map)?;
+        serialize_field::<i64, S>(&self.multiple_of, "multipleOf", &mut map)?;
 
         Ok(map)
     }

@@ -10,9 +10,10 @@
  */
 
 use super::DataSchema;
+use crate::data_structures::array::ArrayEntry;
+use crate::data_structures::map::MapEntry;
 use crate::data_structures::{array::Array, map::Map};
-use crate::serialize_field;
-use serde::ser::SerializeMap;
+use crate::models::serialize_field;
 
 #[derive(Debug)]
 pub struct ObjectSchema<'a> {
@@ -25,8 +26,8 @@ impl<'a> ObjectSchema<'a> {
     where
         S: serde::Serializer,
     {
-        serialize_field!("properties", &self.properties, map);
-        serialize_field!("required", &self.required, map);
+        serialize_field::<MapEntry<&'a DataSchema>, S>(&self.properties, "properties", &mut map)?;
+        serialize_field::<ArrayEntry<&'a str>, S>(&self.required, "required", &mut map)?;
 
         Ok(map)
     }

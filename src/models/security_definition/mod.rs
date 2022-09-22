@@ -22,8 +22,11 @@ use serde::{ser::SerializeMap, Serialize};
 
 use crate::{
     constants::JSON_LD_TYPE,
-    data_structures::{array::Array, map::Map},
-    serialize_field,
+    data_structures::{
+        array::{Array, ArrayEntry},
+        map::{Map, MapEntry},
+    },
+    models::serialize_field,
 };
 
 use self::{
@@ -132,46 +135,46 @@ impl<'a> Serialize for SecurityScheme<'a> {
             }
             SecuritySchemeType::Basic(security) => {
                 map.serialize_value("basic")?;
-                serialize_field!("name", &security.name, map);
-                serialize_field!("in", &security.r#in, map);
+                serialize_field::<&str, S>(&security.name, "name", &mut map)?;
+                serialize_field::<In, S>(&security.r#in, "in", &mut map)?;
             }
             SecuritySchemeType::Digest(security) => {
                 map.serialize_value("digest")?;
-                serialize_field!("name", &security.name, map);
-                serialize_field!("in", &security.r#in, map);
-                serialize_field!("qop", &security.qop, map);
+                serialize_field::<&str, S>(&security.name, "name", &mut map)?;
+                serialize_field::<In, S>(&security.r#in, "in", &mut map)?;
+                serialize_field::<QoP, S>(&security.qop, "qop", &mut map)?;
             }
             SecuritySchemeType::Apikey(security) => {
                 map.serialize_value("apikey")?;
-                serialize_field!("name", &security.name, map);
-                serialize_field!("in", &security.r#in, map);
+                serialize_field::<&str, S>(&security.name, "name", &mut map)?;
+                serialize_field::<In, S>(&security.r#in, "in", &mut map)?;
             }
             SecuritySchemeType::Bearer(security) => {
                 map.serialize_value("bearer")?;
-                serialize_field!("authorization", &security.authorization, map);
-                serialize_field!("name", &security.name, map);
-                serialize_field!("alg", &security.alg, map);
-                serialize_field!("format", &security.format, map);
-                serialize_field!("in", &security.r#in, map);
+                serialize_field::<&str, S>(&security.authorization, "authorization", &mut map)?;
+                serialize_field::<&str, S>(&security.alg, "alg", &mut map)?;
+                serialize_field::<&str, S>(&security.format, "format", &mut map)?;
+                serialize_field::<&str, S>(&security.name, "name", &mut map)?;
+                serialize_field::<In, S>(&security.r#in, "in", &mut map)?;
             }
             SecuritySchemeType::Psk(security) => {
                 map.serialize_value("psk")?;
-                serialize_field!("identity", &security.identity, map);
+                serialize_field::<&str, S>(&security.identity, "identity", &mut map)?;
             }
             SecuritySchemeType::Oauth2(security) => {
                 map.serialize_value("oauth2")?;
                 map.serialize_entry("flow", &security.flow)?;
-                serialize_field!("authorization", &security.authorization, map);
-                serialize_field!("token", &security.token, map);
-                serialize_field!("refresh", &security.refresh, map);
-                serialize_field!("scopes", &security.scopes, map);
+                serialize_field::<&str, S>(&security.authorization, "authorization", &mut map)?;
+                serialize_field::<&str, S>(&security.token, "token", &mut map)?;
+                serialize_field::<&str, S>(&security.refresh, "refresh", &mut map)?;
+                serialize_field::<ArrayEntry<&str>, S>(&security.scopes, "scopes", &mut map)?;
             }
             SecuritySchemeType::Ace(security) => {
                 map.serialize_value("ace:ACESecurityScheme")?;
-                serialize_field!("ace:as", &security.authorization_server, map);
-                serialize_field!("ace:audience", &security.audience, map);
-                serialize_field!("ace:scopes", &security.scopes, map);
-                serialize_field!("ace:cnonce", &security.cnonce, map);
+                serialize_field::<&str, S>(&security.authorization_server, "ace:as", &mut map)?;
+                serialize_field::<&str, S>(&security.audience, "ace:audience", &mut map)?;
+                serialize_field::<ArrayEntry<&str>, S>(&security.scopes, "ace:scopes", &mut map)?;
+                serialize_field::<bool, S>(&security.cnonce, "ace:cnonce", &mut map)?;
             }
             SecuritySchemeType::Combo(security) => {
                 map.serialize_value("combo")?;
@@ -182,10 +185,10 @@ impl<'a> Serialize for SecurityScheme<'a> {
             }
         };
 
-        serialize_field!(JSON_LD_TYPE, self.json_ld_type, map);
-        serialize_field!("description", self.description, map);
-        serialize_field!("descriptions", self.descriptions, map);
-        serialize_field!("proxy", self.proxy, map);
+        serialize_field::<ArrayEntry<&str>, S>(&self.json_ld_type, JSON_LD_TYPE, &mut map)?;
+        serialize_field::<&str, S>(&self.description, "description", &mut map)?;
+        serialize_field::<&'a MapEntry<&'a str>, S>(&self.descriptions, "descriptions", &mut map)?;
+        serialize_field::<&str, S>(&self.proxy, "proxy", &mut map)?;
 
         map.end()
     }

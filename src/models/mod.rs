@@ -9,6 +9,8 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
+use serde::{ser::SerializeMap, Serialize};
+
 pub mod action;
 pub mod additional_expected_response;
 pub mod data_schema;
@@ -21,11 +23,17 @@ pub mod security_definition;
 pub mod thing_description;
 pub mod version_info;
 
-#[macro_export]
-macro_rules! serialize_field {
-    ($key:expr, $field:expr, $map:expr) => {
-        if let Some(value) = &$field {
-            $map.serialize_entry($key, value)?;
-        }
-    };
+pub fn serialize_field<'a, T: Serialize, S>(
+    field: &Option<T>,
+    key: &str,
+    map: &mut S::SerializeMap,
+) -> Result<(), S::Error>
+where
+    S: serde::Serializer,
+{
+    if let Some(value) = field {
+        map.serialize_entry(key, value)?;
+    }
+
+    Ok(())
 }

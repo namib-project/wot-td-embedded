@@ -9,8 +9,7 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use crate::serialize_field;
-use serde::ser::SerializeMap;
+use crate::models::serialize_field;
 
 #[derive(Debug)]
 pub struct StringSchema<'a> {
@@ -26,11 +25,11 @@ impl<'a> StringSchema<'a> {
     where
         S: serde::Serializer,
     {
-        serialize_field!("minLength", &self.min_length, map);
-        serialize_field!("maxLength", &self.max_length, map);
-        serialize_field!("pattern", &self.pattern, map);
-        serialize_field!("contentEncoding", &self.content_encoding, map);
-        serialize_field!("contentMediaType", &self.content_media_type, map);
+        serialize_field::<u64, S>(&self.min_length, "minLength", &mut map)?;
+        serialize_field::<u64, S>(&self.max_length, "maxLength", &mut map)?;
+        serialize_field::<&str, S>(&self.pattern, "pattern", &mut map)?;
+        serialize_field::<&str, S>(&self.content_encoding, "contentEncoding", &mut map)?;
+        serialize_field::<&str, S>(&self.content_media_type, "contentMediaType", &mut map)?;
 
         Ok(map)
     }

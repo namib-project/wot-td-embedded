@@ -20,8 +20,11 @@ use serde_with::skip_serializing_none;
 
 use crate::{
     constants::JSON_LD_TYPE,
-    data_structures::{array::Array, map::Map},
-    serialize_field,
+    data_structures::{
+        array::{Array, ArrayEntry},
+        map::{Map, MapEntry},
+    },
+    models::serialize_field,
 };
 
 use self::{
@@ -202,19 +205,19 @@ impl<'a> DataSchema<'a> {
     where
         S: serde::Serializer,
     {
-        serialize_field!(JSON_LD_TYPE, &self.json_ld_type, map);
-        serialize_field!("title", &self.title, map);
-        serialize_field!("titles", &self.titles, map);
-        serialize_field!("description", &self.description, map);
-        serialize_field!("descriptions", &self.descriptions, map);
-        serialize_field!("constant", &self.constant, map);
-        serialize_field!("default", &self.default, map);
-        serialize_field!("unit", &self.unit, map);
-        serialize_field!("oneOf", &self.one_of, map);
-        serialize_field!("enum", &self.enumeration, map);
-        serialize_field!("readOnly", &self.read_only, map);
-        serialize_field!("writeOnly", &self.write_only, map);
-        serialize_field!("format", &self.format, map);
+        serialize_field::<ArrayEntry<'a, &'a str>, S>(&self.json_ld_type, JSON_LD_TYPE, &mut map)?;
+        serialize_field::<&str, S>(&self.title, "title", &mut map)?;
+        serialize_field::<MapEntry<'a, &'a str>, S>(&self.titles, "titles", &mut map)?;
+        serialize_field::<&str, S>(&self.description, "description", &mut map)?;
+        serialize_field::<MapEntry<'a, &'a str>, S>(&self.descriptions, "descriptions", &mut map)?;
+        serialize_field::<DataStructure, S>(&self.constant, "constant", &mut map)?;
+        serialize_field::<DataStructure, S>(&self.default, "default", &mut map)?;
+        serialize_field::<&str, S>(&self.unit, "unit", &mut map)?;
+        serialize_field::<ArrayEntry<'a, &'a DataSchema>, S>(&self.one_of, "oneOf", &mut map)?;
+        serialize_field::<ArrayEntry<'a, DataStructure>, S>(&self.enumeration, "enum", &mut map)?;
+        serialize_field::<bool, S>(&self.read_only, "readOnly", &mut map)?;
+        serialize_field::<bool, S>(&self.write_only, "writeOnly", &mut map)?;
+        serialize_field::<&str, S>(&self.format, "format", &mut map)?;
 
         let mut map = map;
 
