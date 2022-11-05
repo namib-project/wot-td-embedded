@@ -26,8 +26,8 @@ impl<'a> ObjectSchema<'a> {
     where
         S: serde::Serializer,
     {
-        serialize_field::<MapEntry<&'a DataSchema>, S>(&self.properties, "properties", &mut map)?;
-        serialize_field::<ArrayEntry<&'a str>, S>(&self.required, "required", &mut map)?;
+        serialize_field::<Map<&'a DataSchema>, S>(&self.properties, "properties", &mut map)?;
+        serialize_field::<Array<&'a str>, S>(&self.required, "required", &mut map)?;
 
         Ok(map)
     }

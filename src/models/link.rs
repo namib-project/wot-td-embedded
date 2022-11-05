@@ -99,13 +99,14 @@ impl<'a> LinkBuilder<'a> {
 mod tests {
     use serde_json_core::{heapless::String, ser::Error, to_string};
 
-    use crate::data_structures::array::Array;
+    use crate::data_structures::array::{Array, ArrayEntry};
 
     use super::Link;
 
     #[test]
     fn serialize() -> Result<(), Error> {
-        let hreflang = Array::<&str>::new("de");
+        let mut hreflang_entry = ArrayEntry::<&str>::new("de");
+        let hreflang = Array::<&str>::new().add(&mut hreflang_entry);
 
         let additional_expected_response = Link::builder("coap://example.org")
             .link_type("test:testLink")

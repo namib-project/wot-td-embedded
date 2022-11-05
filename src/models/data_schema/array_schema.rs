@@ -9,10 +9,7 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use crate::{
-    data_structures::array::{Array, ArrayEntry},
-    models::serialize_field,
-};
+use crate::{data_structures::array::Array, models::serialize_field};
 
 use super::DataSchema;
 
@@ -28,7 +25,7 @@ impl<'a> ArraySchema<'a> {
     where
         S: serde::Serializer,
     {
-        serialize_field::<ArrayEntry<&'a DataSchema>, S>(&self.items, "items", &mut map)?;
+        serialize_field::<Array<&'a DataSchema>, S>(&self.items, "items", &mut map)?;
         serialize_field::<u64, S>(&self.min_items, "maxItems", &mut map)?;
         serialize_field::<u64, S>(&self.max_items, "minItems", &mut map)?;
 

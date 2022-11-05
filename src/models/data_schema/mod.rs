@@ -205,16 +205,16 @@ impl<'a> DataSchema<'a> {
     where
         S: serde::Serializer,
     {
-        serialize_field::<ArrayEntry<'a, &'a str>, S>(&self.json_ld_type, JSON_LD_TYPE, &mut map)?;
+        serialize_field::<Array<'a, &'a str>, S>(&self.json_ld_type, JSON_LD_TYPE, &mut map)?;
         serialize_field::<&str, S>(&self.title, "title", &mut map)?;
-        serialize_field::<MapEntry<'a, &'a str>, S>(&self.titles, "titles", &mut map)?;
+        serialize_field::<Map<'a, &'a str>, S>(&self.titles, "titles", &mut map)?;
         serialize_field::<&str, S>(&self.description, "description", &mut map)?;
-        serialize_field::<MapEntry<'a, &'a str>, S>(&self.descriptions, "descriptions", &mut map)?;
+        serialize_field::<Map<'a, &'a str>, S>(&self.descriptions, "descriptions", &mut map)?;
         serialize_field::<DataStructure, S>(&self.constant, "constant", &mut map)?;
         serialize_field::<DataStructure, S>(&self.default, "default", &mut map)?;
         serialize_field::<&str, S>(&self.unit, "unit", &mut map)?;
-        serialize_field::<ArrayEntry<'a, &'a DataSchema>, S>(&self.one_of, "oneOf", &mut map)?;
-        serialize_field::<ArrayEntry<'a, DataStructure>, S>(&self.enumeration, "enum", &mut map)?;
+        serialize_field::<Array<'a, &'a DataSchema>, S>(&self.one_of, "oneOf", &mut map)?;
+        serialize_field::<Array<'a, DataStructure>, S>(&self.enumeration, "enum", &mut map)?;
         serialize_field::<bool, S>(&self.read_only, "readOnly", &mut map)?;
         serialize_field::<bool, S>(&self.write_only, "writeOnly", &mut map)?;
         serialize_field::<&str, S>(&self.format, "format", &mut map)?;

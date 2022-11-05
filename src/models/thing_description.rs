@@ -99,7 +99,8 @@ pub struct ThingDescriptionBuilder<'a> {
 
 impl<'a> ThingDescriptionBuilder<'a> {
     fn default() -> Self {
-        let context = Array::new(ContextEntry::default());
+        //let mut context_entry = Array::new_entry(ContextEntry::default());
+        let context = Array::new(); //.add(&mut context_entry);
 
         Self {
             context,
@@ -130,7 +131,8 @@ impl<'a> ThingDescriptionBuilder<'a> {
 
 impl<'a> ThingDescriptionBuilder<'a> {
     pub fn new(title: &'a str) -> ThingDescriptionBuilder<'a> {
-        let context = Array::new(ContextEntry::default());
+        // let mut context_entry = Array::new_entry(ContextEntry::default());
+        let context = Array::new(); //.add(&mut context_entry);
         ThingDescriptionBuilder {
             title,
             context,
@@ -286,40 +288,47 @@ mod tests {
 
     #[test]
     fn serialize_thing_description() -> Result<(), Error> {
-        let action1 = Map::<Action>::new(
-            "toggle2",
-            ActionBuilder::new(Array::<Form>::new(
-                FormBuilder::new("coaps://example.org/toggle2").build(),
-            ))
-            .build(),
-        );
-        let actions = MapEntry::add(
-            "toggle",
-            ActionBuilder::new(Array::<Form>::new(
-                Form::builder("coaps://example.org/toggle")
-                    .op(Array::<OperationType>::new(OperationType::Invokeaction))
-                    .build(),
-            ))
-            .input(DataSchema::builder().title("Toggle Data").build())
-            .build(),
-            &action1,
-        );
+        let mut action1_form =
+            Array::new_entry(FormBuilder::new("coaps://example.org/toggle").build());
+        let action1_forms = Array::new().add(&mut action1_form);
 
-        let links = Array::new(Link::new("https://example.org"));
-        let json_ld_type = Array::new("saref:LightSwitch");
+        let mut action2_form =
+            Array::new_entry(FormBuilder::new("coaps://example.org/toggle2").build());
+        let action2_forms = Array::new().add(&mut action2_form);
+
+        let mut action1 = Map::new_entry(
+            "toggle",
+            ActionBuilder::new(action1_forms)
+                .input(DataSchema::builder().title("Toggle Data").build())
+                .build(),
+        );
+        let mut action2 = Map::new_entry("toggle2", ActionBuilder::new(action2_forms).build());
+
+        let actions = Map::new().add(&mut action1).add(&mut action2);
+
+        let mut link_entry = Array::new_entry(Link::new("https://example.org"));
+        let links = Array::new().add(&mut link_entry);
+
+        let mut json_ld_type_entry = Array::new_entry("saref:LightSwitch");
+        let json_ld_type = Array::new().add(&mut json_ld_type_entry);
 
         const NO_SEC_KEY: &str = "nosec_sc";
-        let security = Array::new(NO_SEC_KEY);
+        let mut security_entry = Array::new_entry(NO_SEC_KEY);
+        let security = Array::new().add(&mut security_entry);
 
-        let security_definitions = Map::<SecurityScheme>::new(
+        let mut security_definitions = Map::new_entry(
             NO_SEC_KEY,
             SecurityScheme::builder(SecuritySchemeType::Nosec).build(),
         );
+        let security_definitions = Map::new().add(&mut security_definitions);
 
-        let properties = Map::<Property>::new(
+        let mut property_form =
+            Array::new_entry(FormBuilder::new("coaps://example.org/status").build());
+        let mut property_forms = Array::new_entry(&mut property_form);
+        let mut property = Map::new_entry(
             "status",
             Property::builder(
-                Array::<Form>::new(FormBuilder::new("coaps://example.org/status").build()),
+                Array::new(),
                 DataSchema::builder()
                     .title("Status")
                     .data_type(DataType::Boolean)
@@ -327,25 +336,31 @@ mod tests {
             )
             .build(),
         );
+        let properties = Map::new().add(&mut property);
 
-        let coap_context = ArrayEntry::new(ContextEntry::MapEntry(Map::<&str>::new(
-            "cov",
-            "http://www.example.org/coap-binding#",
-        )));
-        let context = Array::add(ContextEntry::default(), &coap_context);
+        let mut default_context = Array::new_entry(ContextEntry::default());
 
-        let events = Map::<Event>::new(
+        let mut context_map_entry = Map::new_entry("cov", "http://www.example.org/coap-binding#");
+        let mut context_map = Array::new_entry(ContextEntry::MapEntry(
+            Map::new().add(&mut context_map_entry),
+        ));
+
+        let context = Array::new().add(&mut default_context).add(&mut context_map);
+
+        let mut event_form =
+            Array::new_entry(FormBuilder::new("coaps://example.org/overheating").build());
+        let event_forms = Array::new().add(&mut event_form);
+        let mut event = Map::new_entry(
             "overheating",
-            Event::builder(Array::<Form>::new(
-                FormBuilder::new("coaps://example.org/overheating").build(),
-            ))
-            .data(
-                DataSchema::builder()
-                    .data_type(DataType::Integer(None))
-                    .build(),
-            )
-            .build(),
+            Event::builder(event_forms)
+                .data(
+                    DataSchema::builder()
+                        .data_type(DataType::Integer(None))
+                        .build(),
+                )
+                .build(),
         );
+        let events = Map::new().add(&mut event);
 
         let thing_description = ThingDescription::builder()
             .context(context)
