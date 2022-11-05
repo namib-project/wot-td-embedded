@@ -11,7 +11,44 @@
 
 use serde::{ser::SerializeMap, Serialize};
 
-pub type Map<'a, T> = MapEntry<'a, T>;
+// pub type Map<'a, T> = MapEntry<'a, T>;
+
+#[derive(Debug, Default)]
+pub struct Map<'a, T> {
+    first: Option<&'a MapEntry<'a, T>>,
+}
+
+impl<'a, T> Map<'a, T> {
+    pub fn new() -> Self {
+        Map { first: None }
+    }
+
+    pub fn add(mut self, next: &'a mut MapEntry<'a, T>) -> Self {
+        match self.first {
+            Some(first) => {
+                next.next = Some(first);
+                self.first = Some(next);
+            }
+            None => self.first = Some(next),
+        }
+
+        self
+    }
+
+    pub fn new_entry(key: &'a str, value: T) -> MapEntry<'a, T> {
+        MapEntry {
+            key,
+            value,
+            next: None,
+        }
+    }
+
+    pub fn iter(&'a self) -> Iter<'a, T> {
+        Iter {
+            current: self.first,
+        }
+    }
+}
 
 #[derive(Debug, Default)]
 pub struct MapEntry<'a, T> {
@@ -63,6 +100,20 @@ impl<'a, T> Iterator for Iter<'a, T> {
             }
             None => None,
         }
+    }
+}
+
+impl<'a, T: Serialize> Serialize for Map<'a, T> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        if let Some(first) = self.first {
+            return first.serialize(serializer);
+        }
+
+        let sequence = serializer.serialize_map(None)?;
+        sequence.end()
     }
 }
 

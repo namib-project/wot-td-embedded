@@ -11,7 +11,45 @@
 
 use serde::{ser::SerializeSeq, Serialize};
 
-pub type Array<'a, T> = ArrayEntry<'a, T>;
+// pub type Array<'a, T> = ArrayEntry<'a, T>;
+
+#[derive(Debug, Default)]
+pub struct Array<'a, T> {
+    first: Option<&'a ArrayEntry<'a, T>>,
+    last: Option<&'a ArrayEntry<'a, T>>,
+}
+
+impl<'a, T> Array<'a, T> {
+    pub fn new() -> Self {
+        Array {
+            first: None,
+            last: None,
+        }
+    }
+
+    pub fn add(mut self, next: &'a mut ArrayEntry<'a, T>) -> Self {
+        match self.first {
+            Some(first) => {
+                first.next = Some(&mut next);
+                next.next = Some(first);
+                self.first = Some(next);
+            }
+            None => self.first = Some(next),
+        }
+
+        self
+    }
+
+    pub fn new_entry(value: T) -> ArrayEntry<'a, T> {
+        ArrayEntry { value, next: None }
+    }
+
+    pub fn iter(&'a self) -> Iter<'a, T> {
+        Iter {
+            current: self.first,
+        }
+    }
+}
 
 #[derive(Debug, Default)]
 pub struct ArrayEntry<'a, T> {
@@ -52,6 +90,20 @@ impl<'a, T> Iterator for Iter<'a, T> {
             }
             None => None,
         }
+    }
+}
+
+impl<'a, T: Serialize> Serialize for Array<'a, T> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        if let Some(first) = self.first {
+            return first.serialize(serializer);
+        }
+
+        let sequence = serializer.serialize_seq(None)?;
+        sequence.end()
     }
 }
 
