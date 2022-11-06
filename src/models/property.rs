@@ -9,51 +9,37 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use serde::{ser::SerializeMap, Serialize};
-
-use crate::data_structures::array::Array;
+use alloc::vec::Vec;
+use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
 
 use super::{data_schema::DataSchema, form::Form};
 
-#[derive(Debug)]
+#[skip_serializing_none]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Property<'a> {
-    pub forms: Array<'a, Form<'a>>,
+    #[serde(flatten, borrow)]
     pub data_schema: DataSchema<'a>,
     pub observable: Option<bool>,
+    #[serde(borrow)]
+    pub forms: Vec<Form<'a>>,
 }
 
 impl<'a> Property<'a> {
-    pub fn builder(forms: Array<'a, Form<'a>>, data_schema: DataSchema<'a>) -> PropertyBuilder<'a> {
+    pub fn builder(forms: Vec<Form<'a>>, data_schema: DataSchema<'a>) -> PropertyBuilder<'a> {
         PropertyBuilder::new(forms, data_schema)
-    }
-}
-
-impl<'a> Serialize for Property<'a> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let mut map = serializer.serialize_map(None)?;
-
-        map.serialize_entry("forms", &self.forms)?;
-
-        if let Some(value) = &self.observable {
-            map.serialize_entry("observable", value)?;
-        }
-
-        self.data_schema.serialize_to_map::<S>(map)?.end()
     }
 }
 
 #[derive(Debug)]
 pub struct PropertyBuilder<'a> {
-    pub forms: Array<'a, Form<'a>>,
+    pub forms: Vec<Form<'a>>,
     pub data_schema: DataSchema<'a>,
     pub observable: Option<bool>,
 }
 
 impl<'a> PropertyBuilder<'a> {
-    pub fn new(forms: Array<'a, Form<'a>>, data_schema: DataSchema<'a>) -> PropertyBuilder<'a> {
+    pub fn new(forms: Vec<Form<'a>>, data_schema: DataSchema<'a>) -> Self {
         PropertyBuilder {
             forms,
             data_schema,
@@ -61,12 +47,12 @@ impl<'a> PropertyBuilder<'a> {
         }
     }
 
-    pub fn observable(&mut self, observable: bool) -> &PropertyBuilder<'a> {
+    pub fn observable(mut self, observable: bool) -> Self {
         self.observable = Some(observable);
         self
     }
 
-    pub fn data_schema(&mut self, data_schema: DataSchema<'a>) -> &PropertyBuilder<'a> {
+    pub fn data_schema(mut self, data_schema: DataSchema<'a>) -> Self {
         self.data_schema = data_schema;
         self
     }

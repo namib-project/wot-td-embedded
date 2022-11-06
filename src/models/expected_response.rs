@@ -9,28 +9,30 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use serde::Serialize;
+use alloc::string::String;
+use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct ExpectedResponse<'a> {
-    pub content_type: &'a str,
+pub struct ExpectedResponse {
+    pub content_type: String,
 }
 
-impl<'a> ExpectedResponse<'a> {
-    pub fn new(content_type: &'a str) -> Self {
+impl ExpectedResponse {
+    pub fn new(content_type: String) -> Self {
         ExpectedResponse { content_type }
     }
 }
 #[cfg(test)]
 mod tests {
+    use alloc::borrow::ToOwned;
     use serde_json_core::{heapless::String, ser::Error, to_string};
 
     use super::ExpectedResponse;
 
     #[test]
     fn serialize() -> Result<(), Error> {
-        let additional_expected_response = ExpectedResponse::new("application/json");
+        let additional_expected_response = ExpectedResponse::new("application/json".to_owned());
 
         let expected_result = r#"{"contentType":"application/json"}"#;
         let actual_result: String<34> = to_string(&additional_expected_response)?;

@@ -9,23 +9,23 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use serde::Serialize;
+use alloc::vec::Vec;
+use hashbrown::HashMap;
+use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
-
-use crate::data_structures::{array::Array, map::Map};
 
 use super::{data_schema::DataSchema, form::Form};
 
 #[skip_serializing_none]
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Event<'a> {
-    pub forms: Array<'a, Form<'a>>,
-    pub json_ld_type: Option<Array<'a, &'a str>>,
+    pub forms: Vec<Form<'a>>,
+    pub json_ld_type: Option<Vec<&'a str>>,
     pub title: Option<&'a str>,
-    pub titles: Option<Map<'a, &'a str>>,
+    pub titles: Option<HashMap<&'a str, &'a str>>,
     pub description: Option<&'a str>,
-    pub descriptions: Option<Map<'a, &'a str>>,
+    pub descriptions: Option<HashMap<&'a str, &'a str>>,
     pub subscription: Option<DataSchema<'a>>,
     pub data: Option<DataSchema<'a>>,
     pub data_response: Option<DataSchema<'a>>,
@@ -33,19 +33,19 @@ pub struct Event<'a> {
 }
 
 impl<'a> Event<'a> {
-    pub fn builder(forms: Array<'a, Form<'a>>) -> EventBuilder<'a> {
+    pub fn builder(forms: Vec<Form<'a>>) -> EventBuilder<'a> {
         EventBuilder::new(forms)
     }
 }
 
 #[derive(Debug)]
 pub struct EventBuilder<'a> {
-    pub forms: Array<'a, Form<'a>>,
-    pub json_ld_type: Option<Array<'a, &'a str>>,
+    pub forms: Vec<Form<'a>>,
+    pub json_ld_type: Option<Vec<&'a str>>,
     pub title: Option<&'a str>,
-    pub titles: Option<Map<'a, &'a str>>,
+    pub titles: Option<HashMap<&'a str, &'a str>>,
     pub description: Option<&'a str>,
-    pub descriptions: Option<Map<'a, &'a str>>,
+    pub descriptions: Option<HashMap<&'a str, &'a str>>,
     pub subscription: Option<DataSchema<'a>>,
     pub data: Option<DataSchema<'a>>,
     pub data_response: Option<DataSchema<'a>>,
@@ -53,7 +53,7 @@ pub struct EventBuilder<'a> {
 }
 
 impl<'a> EventBuilder<'a> {
-    pub fn new(forms: Array<'a, Form<'a>>) -> EventBuilder<'a> {
+    pub fn new(forms: Vec<Form<'a>>) -> Self {
         EventBuilder {
             forms,
             json_ld_type: None,
@@ -70,22 +70,22 @@ impl<'a> EventBuilder<'a> {
 
     // TODO: Add missing builder methods
 
-    pub fn subscription(mut self, subscription: DataSchema<'a>) -> EventBuilder<'a> {
+    pub fn subscription(mut self, subscription: DataSchema<'a>) -> Self {
         self.subscription = Some(subscription);
         self
     }
 
-    pub fn data(mut self, data: DataSchema<'a>) -> EventBuilder<'a> {
+    pub fn data(mut self, data: DataSchema<'a>) -> Self {
         self.data = Some(data);
         self
     }
 
-    pub fn data_response(mut self, data_response: DataSchema<'a>) -> EventBuilder<'a> {
+    pub fn data_response(mut self, data_response: DataSchema<'a>) -> Self {
         self.data_response = Some(data_response);
         self
     }
 
-    pub fn cancellation(mut self, cancellation: DataSchema<'a>) -> EventBuilder<'a> {
+    pub fn cancellation(mut self, cancellation: DataSchema<'a>) -> Self {
         self.cancellation = Some(cancellation);
         self
     }

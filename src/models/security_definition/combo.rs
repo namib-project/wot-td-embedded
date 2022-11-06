@@ -9,21 +9,24 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use crate::data_structures::array::Array;
+use alloc::{string::String, vec::Vec};
+use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
 
-#[derive(Debug)]
-pub struct ComboSecurityScheme<'a> {
-    pub combo_variant: ComboVariant<'a>,
+#[skip_serializing_none]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ComboSecurityScheme {
+    pub combo_variant: ComboVariant,
 }
 
-impl<'a> ComboSecurityScheme<'a> {
-    pub fn new(combo_variant: ComboVariant<'a>) -> ComboSecurityScheme<'a> {
+impl ComboSecurityScheme {
+    pub fn new(combo_variant: ComboVariant) -> ComboSecurityScheme {
         ComboSecurityScheme { combo_variant }
     }
 }
 
-#[derive(Debug)]
-pub enum ComboVariant<'a> {
-    AllOf(Array<'a, &'a str>),
-    OneOf(Array<'a, &'a str>),
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ComboVariant {
+    AllOf(Vec<String>),
+    OneOf(Vec<String>),
 }

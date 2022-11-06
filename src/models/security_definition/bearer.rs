@@ -9,9 +9,13 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
+use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
+
 use super::{In, QoP};
 
-#[derive(Debug)]
+#[skip_serializing_none]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BearerSecurityScheme<'a> {
     pub authorization: Option<&'a str>,
     pub name: Option<&'a str>,

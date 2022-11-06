@@ -8,9 +8,14 @@ license = "MIT OR Apache-2.0"
 keywords = ["web-of-things", "webofthings", "wot", "iot", "embedded", "no_std"]
 
 [dependencies]
-serde = { version = "1.0", default-features = false, features = ["derive"] }
+hashbrown = { version = "0.12.3", default-features = false, features = ["ahash", "inline-more", "serde"] }
+serde = { version = "1.0.87", default-features = false, features = ["derive", "alloc"] }
 serde_derive = "1.0.144"
 serde_with = { version = "2.0.0", default-features = false, features = ["macros"] }
 
 [dev-dependencies]
 serde-json-core = "0.4.0"
+serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
+
+[profile.release]
+opt-level = "s"

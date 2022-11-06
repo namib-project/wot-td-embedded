@@ -9,13 +9,12 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use serde::Serialize;
+use alloc::vec::Vec;
+use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 
-use crate::data_structures::array::Array;
-
 #[skip_serializing_none]
-#[derive(Serialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Link<'a> {
     pub href: &'a str,
@@ -24,7 +23,7 @@ pub struct Link<'a> {
     pub rel: Option<&'a str>,
     pub anchor: Option<&'a str>,
     pub sizes: Option<&'a str>,
-    pub hreflang: Option<Array<'a, &'a str>>,
+    pub hreflang: Option<Vec<&'a str>>,
 }
 
 impl<'a> Link<'a> {
@@ -47,38 +46,38 @@ pub struct LinkBuilder<'a> {
     pub rel: Option<&'a str>,
     pub anchor: Option<&'a str>,
     pub sizes: Option<&'a str>,
-    pub hreflang: Option<Array<'a, &'a str>>,
+    pub hreflang: Option<Vec<&'a str>>,
 }
 
 impl<'a> LinkBuilder<'a> {
-    pub fn new(href: &'a str) -> LinkBuilder<'a> {
+    pub fn new(href: &'a str) -> Self {
         LinkBuilder {
             href,
             ..Default::default()
         }
     }
 
-    pub fn href(mut self, href: &'a str) -> LinkBuilder<'a> {
+    pub fn href(mut self, href: &'a str) -> Self {
         self.href = href;
         self
     }
 
-    pub fn link_type(mut self, link_type: &'a str) -> LinkBuilder<'a> {
+    pub fn link_type(mut self, link_type: &'a str) -> Self {
         self.link_type = Some(link_type);
         self
     }
 
-    pub fn rel(mut self, rel: &'a str) -> LinkBuilder<'a> {
+    pub fn rel(mut self, rel: &'a str) -> Self {
         self.rel = Some(rel);
         self
     }
 
-    pub fn anchor(mut self, anchor: &'a str) -> LinkBuilder<'a> {
+    pub fn anchor(mut self, anchor: &'a str) -> Self {
         self.anchor = Some(anchor);
         self
     }
 
-    pub fn hreflang(mut self, hreflang: Array<'a, &'a str>) -> LinkBuilder<'a> {
+    pub fn hreflang(mut self, hreflang: Vec<&'a str>) -> Self {
         self.hreflang = Some(hreflang);
         self
     }
@@ -97,22 +96,18 @@ impl<'a> LinkBuilder<'a> {
 
 #[cfg(test)]
 mod tests {
+    use alloc::vec;
     use serde_json_core::{heapless::String, ser::Error, to_string};
-
-    use crate::data_structures::array::{Array, ArrayEntry};
 
     use super::Link;
 
     #[test]
     fn serialize() -> Result<(), Error> {
-        let mut hreflang_entry = ArrayEntry::<&str>::new("de");
-        let hreflang = Array::<&str>::new().add(&mut hreflang_entry);
-
         let additional_expected_response = Link::builder("coap://example.org")
             .link_type("test:testLink")
             .rel("test")
             .anchor("test")
-            .hreflang(hreflang)
+            .hreflang(vec!["de"])
             .build();
 
         let expected_result = r#"{"href":"coap://example.org","@type":"test:testLink","rel":"test","anchor":"test","hreflang":["de"]}"#;

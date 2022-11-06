@@ -9,19 +9,22 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use crate::data_structures::array::Array;
+use alloc::vec::Vec;
+use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
 
-#[derive(Debug)]
+#[skip_serializing_none]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Oauth2SecurityScheme<'a> {
     pub flow: &'a str,
     pub authorization: Option<&'a str>,
     pub token: Option<&'a str>,
     pub refresh: Option<&'a str>,
-    pub scopes: Option<Array<'a, &'a str>>,
+    pub scopes: Option<Vec<&'a str>>,
 }
 
 impl<'a> Oauth2SecurityScheme<'a> {
-    pub fn builder(flow: &'a str) -> Oauth2SecuritySchemeBuilder<'a> {
+    pub fn builder(flow: &'a str) -> Oauth2SecuritySchemeBuilder {
         Oauth2SecuritySchemeBuilder::new(flow)
     }
 }
@@ -32,7 +35,7 @@ pub struct Oauth2SecuritySchemeBuilder<'a> {
     pub authorization: Option<&'a str>,
     pub token: Option<&'a str>,
     pub refresh: Option<&'a str>,
-    pub scopes: Option<Array<'a, &'a str>>,
+    pub scopes: Option<Vec<&'a str>>,
 }
 
 impl<'a> Oauth2SecuritySchemeBuilder<'a> {
@@ -58,7 +61,7 @@ impl<'a> Oauth2SecuritySchemeBuilder<'a> {
         self
     }
 
-    pub fn scopes(mut self, scopes: Array<'a, &'a str>) -> Self {
+    pub fn scopes(mut self, scopes: Vec<&'a str>) -> Self {
         self.scopes = Some(scopes);
         self
     }

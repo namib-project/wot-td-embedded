@@ -9,28 +9,13 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use crate::models::serialize_field;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StringSchema<'a> {
     pub min_length: Option<u64>,
     pub max_length: Option<u64>,
     pub pattern: Option<&'a str>,
     pub content_encoding: Option<&'a str>,
     pub content_media_type: Option<&'a str>,
-}
-
-impl<'a> StringSchema<'a> {
-    pub fn serialize_to_map<S>(&self, mut map: S::SerializeMap) -> Result<S::SerializeMap, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serialize_field::<u64, S>(&self.min_length, "minLength", &mut map)?;
-        serialize_field::<u64, S>(&self.max_length, "maxLength", &mut map)?;
-        serialize_field::<&str, S>(&self.pattern, "pattern", &mut map)?;
-        serialize_field::<&str, S>(&self.content_encoding, "contentEncoding", &mut map)?;
-        serialize_field::<&str, S>(&self.content_media_type, "contentMediaType", &mut map)?;
-
-        Ok(map)
-    }
 }

@@ -15,48 +15,35 @@ pub mod number_schema;
 pub mod object_schema;
 pub mod string_schema;
 
-use serde::{ser::SerializeMap, Serialize};
+use alloc::vec::Vec;
+use hashbrown::HashMap;
+use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
-
-use crate::{
-    constants::JSON_LD_TYPE,
-    data_structures::{
-        array::{Array, ArrayEntry},
-        map::{Map, MapEntry},
-    },
-    models::serialize_field,
-};
 
 use self::{
     array_schema::ArraySchema, integer_schema::IntegerSchema, number_schema::NumberSchema,
     object_schema::ObjectSchema, string_schema::StringSchema,
 };
 
-macro_rules! serialize_schema {
-    ($schema:expr, $map:expr) => {
-        if let Some(schema) = &$schema {
-            $map = schema.serialize_to_map::<S>($map)?;
-        }
-    };
-}
-
-#[derive(Debug)]
+#[skip_serializing_none]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DataSchema<'a> {
-    pub json_ld_type: Option<Array<'a, &'a str>>,
+    pub json_ld_type: Option<Vec<&'a str>>,
     pub title: Option<&'a str>,
-    pub titles: Option<Map<'a, &'a str>>,
+    pub titles: Option<HashMap<&'a str, &'a str>>,
     pub description: Option<&'a str>,
-    pub descriptions: Option<Map<'a, &'a str>>,
+    pub descriptions: Option<HashMap<&'a str, &'a str>>,
     pub constant: Option<DataStructure<'a>>,
     pub default: Option<DataStructure<'a>>,
     pub unit: Option<&'a str>,
-    pub one_of: Option<Array<'a, &'a DataSchema<'a>>>,
-    pub enumeration: Option<Array<'a, DataStructure<'a>>>,
+    pub one_of: Option<Vec<DataSchema<'a>>>,
+    pub enumeration: Option<Vec<DataStructure<'a>>>,
     pub read_only: Option<bool>,
     pub write_only: Option<bool>,
     pub format: Option<&'a str>,
+    #[serde(flatten)]
     pub data_type: Option<DataType<'a>>,
-    pub additional_fields: Option<Map<'a, DataStructure<'a>>>,
+    pub additional_fields: Option<HashMap<&'a str, DataStructure<'a>>>,
 }
 
 impl<'a> DataSchema<'a> {
@@ -67,34 +54,24 @@ impl<'a> DataSchema<'a> {
     }
 }
 
-impl<'a> Serialize for DataSchema<'a> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let map = serializer.serialize_map(None)?;
-
-        self.serialize_to_map::<S>(map)?.end()
-    }
-}
-
 #[derive(Debug, Default)]
 pub struct DataSchemaBuilder<'a> {
-    pub json_ld_type: Option<Array<'a, &'a str>>,
+    pub json_ld_type: Option<Vec<&'a str>>,
     pub title: Option<&'a str>,
-    pub titles: Option<Map<'a, &'a str>>,
+    pub titles: Option<HashMap<&'a str, &'a str>>,
     pub description: Option<&'a str>,
-    pub descriptions: Option<Map<'a, &'a str>>,
+    pub descriptions: Option<HashMap<&'a str, &'a str>>,
     pub constant: Option<DataStructure<'a>>,
     pub default: Option<DataStructure<'a>>,
     pub unit: Option<&'a str>,
-    pub one_of: Option<Array<'a, &'a DataSchema<'a>>>,
-    pub enumeration: Option<Array<'a, DataStructure<'a>>>,
+    pub one_of: Option<Vec<DataSchema<'a>>>,
+    pub enumeration: Option<Vec<DataStructure<'a>>>,
     pub read_only: Option<bool>,
     pub write_only: Option<bool>,
     pub format: Option<&'a str>,
+
     pub data_type: Option<DataType<'a>>,
-    pub additional_fields: Option<Map<'a, DataStructure<'a>>>,
+    pub additional_fields: Option<HashMap<&'a str, DataStructure<'a>>>,
 }
 
 impl<'a> DataSchemaBuilder<'a> {
@@ -104,7 +81,7 @@ impl<'a> DataSchemaBuilder<'a> {
         }
     }
 
-    pub fn json_ld_type(mut self, json_ld_type: Array<'a, &'a str>) -> Self {
+    pub fn json_ld_type(mut self, json_ld_type: Vec<&'a str>) -> Self {
         self.json_ld_type = Some(json_ld_type);
         self
     }
@@ -114,7 +91,7 @@ impl<'a> DataSchemaBuilder<'a> {
         self
     }
 
-    pub fn titles(mut self, titles: Map<'a, &'a str>) -> Self {
+    pub fn titles(mut self, titles: HashMap<&'a str, &'a str>) -> Self {
         self.titles = Some(titles);
         self
     }
@@ -124,7 +101,7 @@ impl<'a> DataSchemaBuilder<'a> {
         self
     }
 
-    pub fn descriptions(mut self, descriptions: Map<'a, &'a str>) -> Self {
+    pub fn descriptions(mut self, descriptions: HashMap<&'a str, &'a str>) -> Self {
         self.descriptions = Some(descriptions);
         self
     }
@@ -144,12 +121,12 @@ impl<'a> DataSchemaBuilder<'a> {
         self
     }
 
-    pub fn one_of(mut self, one_of: Array<'a, &'a DataSchema<'a>>) -> Self {
+    pub fn one_of(mut self, one_of: Vec<DataSchema<'a>>) -> Self {
         self.one_of = Some(one_of);
         self
     }
 
-    pub fn enumeration(mut self, enumeration: Array<'a, DataStructure<'a>>) -> Self {
+    pub fn enumeration(mut self, enumeration: Vec<DataStructure<'a>>) -> Self {
         self.enumeration = Some(enumeration);
         self
     }
@@ -174,7 +151,10 @@ impl<'a> DataSchemaBuilder<'a> {
         self
     }
 
-    pub fn additional_fields(mut self, additional_fields: Map<'a, DataStructure<'a>>) -> Self {
+    pub fn additional_fields(
+        mut self,
+        additional_fields: HashMap<&'a str, DataStructure<'a>>,
+    ) -> Self {
         self.additional_fields = Some(additional_fields);
         self
     }
@@ -200,87 +180,30 @@ impl<'a> DataSchemaBuilder<'a> {
     }
 }
 
-impl<'a> DataSchema<'a> {
-    pub fn serialize_to_map<S>(&self, mut map: S::SerializeMap) -> Result<S::SerializeMap, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serialize_field::<Array<'a, &'a str>, S>(&self.json_ld_type, JSON_LD_TYPE, &mut map)?;
-        serialize_field::<&str, S>(&self.title, "title", &mut map)?;
-        serialize_field::<Map<'a, &'a str>, S>(&self.titles, "titles", &mut map)?;
-        serialize_field::<&str, S>(&self.description, "description", &mut map)?;
-        serialize_field::<Map<'a, &'a str>, S>(&self.descriptions, "descriptions", &mut map)?;
-        serialize_field::<DataStructure, S>(&self.constant, "constant", &mut map)?;
-        serialize_field::<DataStructure, S>(&self.default, "default", &mut map)?;
-        serialize_field::<&str, S>(&self.unit, "unit", &mut map)?;
-        serialize_field::<Array<'a, &'a DataSchema>, S>(&self.one_of, "oneOf", &mut map)?;
-        serialize_field::<Array<'a, DataStructure>, S>(&self.enumeration, "enum", &mut map)?;
-        serialize_field::<bool, S>(&self.read_only, "readOnly", &mut map)?;
-        serialize_field::<bool, S>(&self.write_only, "writeOnly", &mut map)?;
-        serialize_field::<&str, S>(&self.format, "format", &mut map)?;
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
+#[serde(rename_all = "camelCase")]
+#[skip_serializing_none]
 
-        let mut map = map;
-
-        if let Some(data_type) = &self.data_type {
-            map.serialize_key("type")?;
-            match data_type {
-                DataType::Object(schema) => {
-                    map.serialize_value("object")?;
-                    serialize_schema!(schema, map);
-                }
-                DataType::Array(schema) => {
-                    map.serialize_value("array")?;
-                    serialize_schema!(schema, map);
-                }
-                DataType::String(schema) => {
-                    map.serialize_value("string")?;
-                    serialize_schema!(schema, map);
-                }
-                DataType::Number(schema) => {
-                    map.serialize_value("number")?;
-                    serialize_schema!(schema, map);
-                }
-                DataType::Integer(schema) => {
-                    map.serialize_value("integer")?;
-                    serialize_schema!(schema, map);
-                }
-                DataType::Boolean => {
-                    map.serialize_value("boolean")?;
-                }
-                DataType::Null => {
-                    map.serialize_value("null")?;
-                }
-            }
-        }
-
-        if let Some(additional_fields) = &self.additional_fields {
-            for map_entry in additional_fields.iter() {
-                map.serialize_entry(map_entry.key, map_entry.value)?;
-            }
-        }
-
-        Ok(map)
-    }
-}
-
-#[derive(Debug)]
 pub enum DataType<'a> {
-    Object(Option<ObjectSchema<'a>>),
-    Array(Option<ArraySchema<'a>>),
-    String(Option<StringSchema<'a>>),
-    Number(Option<NumberSchema>),
-    Integer(Option<IntegerSchema>),
+    #[serde(borrow)]
+    Object(ObjectSchema<'a>),
+    #[serde(borrow)]
+    Array(ArraySchema<'a>),
+    #[serde(borrow)]
+    String(StringSchema<'a>),
+    Number(NumberSchema),
+    Integer(IntegerSchema),
     Boolean,
     Null,
 }
 
-#[skip_serializing_none]
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum DataStructure<'a> {
     Null,
     String(&'a str),
     Integer(i64),
     Number(f64),
-    Object(Map<'a, &'a DataStructure<'a>>),
-    Array(Array<'a, &'a DataStructure<'a>>),
+    Object(HashMap<&'a str, DataStructure<'a>>),
+    Array(Vec<DataStructure<'a>>),
 }

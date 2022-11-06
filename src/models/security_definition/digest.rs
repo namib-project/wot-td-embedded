@@ -9,9 +9,13 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
+use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
+
 use super::{In, QoP};
 
-#[derive(Debug, Default)]
+#[skip_serializing_none]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct DigestSecurityScheme<'a> {
     pub name: Option<&'a str>,
     pub r#in: Option<In>,

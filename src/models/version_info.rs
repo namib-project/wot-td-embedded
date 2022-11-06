@@ -9,25 +9,25 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 
 #[skip_serializing_none]
-#[derive(Serialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct VersionInfo<'a> {
     pub instance: &'a str,
     pub model: Option<&'a str>,
 }
 
 impl<'a> VersionInfo<'a> {
-    pub fn new(instance: &'a str) -> VersionInfo<'a> {
+    pub fn new(instance: &'a str) -> Self {
         VersionInfo {
             instance,
             ..Default::default()
         }
     }
 
-    pub fn builder(instance: &'a str) -> VersionInfoBuilder<'a> {
+    pub fn builder(instance: &'a str) -> VersionInfoBuilder {
         VersionInfoBuilder::new(instance)
     }
 }
@@ -39,19 +39,19 @@ pub struct VersionInfoBuilder<'a> {
 }
 
 impl<'a> VersionInfoBuilder<'a> {
-    pub fn new(instance: &'a str) -> VersionInfoBuilder<'a> {
+    pub fn new(instance: &'a str) -> Self {
         VersionInfoBuilder {
             instance,
             ..Default::default()
         }
     }
 
-    pub fn instance(mut self, instance: &'a str) -> VersionInfoBuilder<'a> {
+    pub fn instance(mut self, instance: &'a str) -> Self {
         self.instance = instance;
         self
     }
 
-    pub fn model(mut self, model: &'a str) -> VersionInfoBuilder<'a> {
+    pub fn model(mut self, model: &'a str) -> Self {
         self.model = Some(model);
         self
     }

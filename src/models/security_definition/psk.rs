@@ -9,7 +9,11 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-#[derive(Debug)]
+use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
+
+#[skip_serializing_none]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PskSecurityScheme<'a> {
     pub identity: Option<&'a str>,
 }

@@ -9,30 +9,31 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use serde::Serialize;
+use alloc::string::String;
+use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct AdditionalExpectedResponse<'a> {
+pub struct AdditionalExpectedResponse {
     pub success: Option<bool>,
-    pub content_type: Option<&'a str>,
-    pub schema: Option<&'a str>,
+    pub content_type: Option<String>,
+    pub schema: Option<String>,
 }
 
-impl<'a> AdditionalExpectedResponse<'a> {
-    pub fn builder() -> AdditionalExpectedResponseBuilder<'a> {
+impl AdditionalExpectedResponse {
+    pub fn builder() -> AdditionalExpectedResponseBuilder {
         AdditionalExpectedResponseBuilder::new()
     }
 }
 
 #[derive(Debug, Default)]
-pub struct AdditionalExpectedResponseBuilder<'a> {
+pub struct AdditionalExpectedResponseBuilder {
     pub success: Option<bool>,
-    pub content_type: Option<&'a str>,
-    pub schema: Option<&'a str>,
+    pub content_type: Option<String>,
+    pub schema: Option<String>,
 }
 
-impl<'a> AdditionalExpectedResponseBuilder<'a> {
+impl AdditionalExpectedResponseBuilder {
     pub fn new() -> Self {
         AdditionalExpectedResponseBuilder::default()
     }
@@ -42,17 +43,17 @@ impl<'a> AdditionalExpectedResponseBuilder<'a> {
         self
     }
 
-    pub fn content_type(mut self, content_type: &'a str) -> Self {
+    pub fn content_type(mut self, content_type: String) -> Self {
         self.content_type = Some(content_type);
         self
     }
 
-    pub fn schema(mut self, schema: &'a str) -> Self {
+    pub fn schema(mut self, schema: String) -> Self {
         self.schema = Some(schema);
         self
     }
 
-    pub fn build(self) -> AdditionalExpectedResponse<'a> {
+    pub fn build(self) -> AdditionalExpectedResponse {
         AdditionalExpectedResponse {
             success: self.success,
             content_type: self.content_type,
@@ -64,6 +65,7 @@ impl<'a> AdditionalExpectedResponseBuilder<'a> {
 #[cfg(test)]
 mod tests {
 
+    use alloc::borrow::ToOwned;
     use serde_json_core::{heapless::String, ser::Error, to_string};
 
     use super::AdditionalExpectedResponse;
@@ -71,9 +73,9 @@ mod tests {
     #[test]
     fn serialize() -> Result<(), Error> {
         let additional_expected_response = AdditionalExpectedResponse::builder()
-            .content_type("application/json")
+            .content_type("application/json".to_owned())
             .success(true)
-            .schema("test")
+            .schema("test".to_owned())
             .build();
 
         let expected_result =

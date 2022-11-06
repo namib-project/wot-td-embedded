@@ -11,35 +11,29 @@ fn main() -> Result<(), Error> {
         .description("Test Description")
         .build();
 
-    // let mut buf: [u8; 200] = [0; 200];
+    let mut buf: [u8; 200] = [0; 200];
 
-    // let length = to_slice::<ThingDescription>(&thing_description, &mut buf)?;
-    // println!("{:?}", &buf[0..length]);
+    let length = to_slice::<ThingDescription>(&thing_description, &mut buf)?;
+    println!("{:?}", &buf[0..length]);
 
-    // const CHUNK_SIZE: usize = 10;
+    const CHUNK_SIZE: usize = 10;
+    let mut chunks = buf[0..length].chunks(CHUNK_SIZE);
 
-    // if let Ok(length) = thing_description.to_json(&mut buf) {
-    //     println!("{:?}", &buf[0..length]);
-    // };
+    let mut test;
 
-    // let blah = to_string::<ThingDescription, 100>(&thing_description)?;
-    // let mut chunks = buf[0..length].chunks(CHUNK_SIZE);
+    let chunk = chunks.nth(0);
+    println!("{:?}", chunk);
 
-    // let mut blah = "Test";
+    for chunk in chunks {
+        println!("{:?}", chunk);
+        test = from_utf8(chunk).unwrap();
+        println!("{:?}", test);
+    }
 
-    // let chunk = chunks.nth(0);
-    // println!("{:?}", chunk);
-
-    // for chunk in chunks {
-    //     println!("{:?}", chunk);
-    //     blah = from_utf8(chunk).unwrap();
-    //     println!("{:?}", blah);
-    // }
-
-    // println!(
-    //     "{}",
-    //     to_string::<ThingDescription, 100>(&thing_description)?
-    // );
+    println!(
+        "{}",
+        to_string::<ThingDescription, 100>(&thing_description)?
+    );
 
     println!("{}", &thing_description.title);
     println!("{:?}", &thing_description.description);

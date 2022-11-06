@@ -18,45 +18,40 @@ pub mod digest;
 pub mod oauth2;
 pub mod psk;
 
-use serde::{ser::SerializeMap, Serialize};
-
-use crate::{
-    constants::JSON_LD_TYPE,
-    data_structures::{
-        array::{Array, ArrayEntry},
-        map::{Map, MapEntry},
-    },
-    models::serialize_field,
-};
+use alloc::vec::Vec;
+use hashbrown::HashMap;
+use serde::{Deserialize, Serialize};
 
 use self::{
     ace::AceSecurityScheme, api_key::ApiKeySecurityScheme, basic::BasicSecurityScheme,
-    bearer::BearerSecurityScheme, combo::ComboSecurityScheme, combo::ComboVariant,
-    digest::DigestSecurityScheme, oauth2::Oauth2SecurityScheme, psk::PskSecurityScheme,
+    bearer::BearerSecurityScheme, combo::ComboSecurityScheme, digest::DigestSecurityScheme,
+    oauth2::Oauth2SecurityScheme, psk::PskSecurityScheme,
 };
 
+use serde_with::skip_serializing_none;
 // TODO: Add possibility to define additional fields
-
-#[derive(Debug)]
+#[skip_serializing_none]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SecurityScheme<'a> {
-    pub json_ld_type: Option<Array<'a, &'a str>>,
+    pub json_ld_type: Option<Vec<&'a str>>,
     pub description: Option<&'a str>,
-    pub descriptions: Option<&'a Map<'a, &'a str>>,
+    pub descriptions: Option<HashMap<&'a str, &'a str>>,
     pub proxy: Option<&'a str>,
+    #[serde(flatten)]
     pub scheme: SecuritySchemeType<'a>,
 }
 
 impl<'a> SecurityScheme<'a> {
-    pub fn builder(scheme: SecuritySchemeType<'a>) -> SecuritySchemeBuilder<'a> {
+    pub fn builder(scheme: SecuritySchemeType) -> SecuritySchemeBuilder {
         SecuritySchemeBuilder::new(scheme)
     }
 }
 
 #[derive(Debug)]
 pub struct SecuritySchemeBuilder<'a> {
-    pub json_ld_type: Option<Array<'a, &'a str>>,
+    pub json_ld_type: Option<Vec<&'a str>>,
     pub description: Option<&'a str>,
-    pub descriptions: Option<&'a Map<'a, &'a str>>,
+    pub descriptions: Option<HashMap<&'a str, &'a str>>,
     pub proxy: Option<&'a str>,
     pub scheme: SecuritySchemeType<'a>,
 }
@@ -72,7 +67,7 @@ impl<'a> SecuritySchemeBuilder<'a> {
         }
     }
 
-    pub fn json_ld_type(mut self, json_ld_type: Array<'a, &'a str>) -> Self {
+    pub fn json_ld_type(mut self, json_ld_type: Vec<&'a str>) -> Self {
         self.json_ld_type = Some(json_ld_type);
         self
     }
@@ -82,7 +77,7 @@ impl<'a> SecuritySchemeBuilder<'a> {
         self
     }
 
-    pub fn descriptions(mut self, descriptions: &'a Map<'a, &'a str>) -> Self {
+    pub fn descriptions(mut self, descriptions: HashMap<&'a str, &'a str>) -> Self {
         self.descriptions = Some(descriptions);
         self
     }
@@ -103,98 +98,29 @@ impl<'a> SecuritySchemeBuilder<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "scheme")]
+#[serde(rename_all = "lowercase")]
 pub enum SecuritySchemeType<'a> {
     Nosec,
     Auto,
-    Combo(ComboSecurityScheme<'a>),
-    Basic(BasicSecurityScheme<'a>),
+    Combo(ComboSecurityScheme),
+    Basic(BasicSecurityScheme),
+    #[serde(borrow)]
     Digest(DigestSecurityScheme<'a>),
+    #[serde(borrow)]
     Apikey(ApiKeySecurityScheme<'a>),
+    #[serde(borrow)]
     Bearer(BearerSecurityScheme<'a>),
+    #[serde(borrow)]
     Psk(PskSecurityScheme<'a>),
+    #[serde(borrow)]
     Oauth2(Oauth2SecurityScheme<'a>),
+    #[serde(borrow)]
     Ace(AceSecurityScheme<'a>),
 }
 
-impl<'a> Serialize for SecurityScheme<'a> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let mut map = serializer.serialize_map(None)?;
-
-        map.serialize_key("scheme")?;
-
-        match &self.scheme {
-            SecuritySchemeType::Auto => {
-                map.serialize_value("auto")?;
-            }
-            SecuritySchemeType::Nosec => {
-                map.serialize_value("nosec")?;
-            }
-            SecuritySchemeType::Basic(security) => {
-                map.serialize_value("basic")?;
-                serialize_field::<&str, S>(&security.name, "name", &mut map)?;
-                serialize_field::<In, S>(&security.r#in, "in", &mut map)?;
-            }
-            SecuritySchemeType::Digest(security) => {
-                map.serialize_value("digest")?;
-                serialize_field::<&str, S>(&security.name, "name", &mut map)?;
-                serialize_field::<In, S>(&security.r#in, "in", &mut map)?;
-                serialize_field::<QoP, S>(&security.qop, "qop", &mut map)?;
-            }
-            SecuritySchemeType::Apikey(security) => {
-                map.serialize_value("apikey")?;
-                serialize_field::<&str, S>(&security.name, "name", &mut map)?;
-                serialize_field::<In, S>(&security.r#in, "in", &mut map)?;
-            }
-            SecuritySchemeType::Bearer(security) => {
-                map.serialize_value("bearer")?;
-                serialize_field::<&str, S>(&security.authorization, "authorization", &mut map)?;
-                serialize_field::<&str, S>(&security.alg, "alg", &mut map)?;
-                serialize_field::<&str, S>(&security.format, "format", &mut map)?;
-                serialize_field::<&str, S>(&security.name, "name", &mut map)?;
-                serialize_field::<In, S>(&security.r#in, "in", &mut map)?;
-            }
-            SecuritySchemeType::Psk(security) => {
-                map.serialize_value("psk")?;
-                serialize_field::<&str, S>(&security.identity, "identity", &mut map)?;
-            }
-            SecuritySchemeType::Oauth2(security) => {
-                map.serialize_value("oauth2")?;
-                map.serialize_entry("flow", &security.flow)?;
-                serialize_field::<&str, S>(&security.authorization, "authorization", &mut map)?;
-                serialize_field::<&str, S>(&security.token, "token", &mut map)?;
-                serialize_field::<&str, S>(&security.refresh, "refresh", &mut map)?;
-                serialize_field::<Array<&str>, S>(&security.scopes, "scopes", &mut map)?;
-            }
-            SecuritySchemeType::Ace(security) => {
-                map.serialize_value("ace:ACESecurityScheme")?;
-                serialize_field::<&str, S>(&security.authorization_server, "ace:as", &mut map)?;
-                serialize_field::<&str, S>(&security.audience, "ace:audience", &mut map)?;
-                serialize_field::<Array<&str>, S>(&security.scopes, "ace:scopes", &mut map)?;
-                serialize_field::<bool, S>(&security.cnonce, "ace:cnonce", &mut map)?;
-            }
-            SecuritySchemeType::Combo(security) => {
-                map.serialize_value("combo")?;
-                match &security.combo_variant {
-                    ComboVariant::OneOf(one_of) => map.serialize_entry("oneOf", &one_of)?,
-                    ComboVariant::AllOf(all_of) => map.serialize_entry("allOf", &all_of)?,
-                }
-            }
-        };
-
-        serialize_field::<Array<&str>, S>(&self.json_ld_type, JSON_LD_TYPE, &mut map)?;
-        serialize_field::<&str, S>(&self.description, "description", &mut map)?;
-        serialize_field::<&'a Map<&'a str>, S>(&self.descriptions, "descriptions", &mut map)?;
-        serialize_field::<&str, S>(&self.proxy, "proxy", &mut map)?;
-
-        map.end()
-    }
-}
-
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum In {
     Header,
@@ -204,7 +130,7 @@ pub enum In {
     Auto,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "kebab-case")]
 pub enum QoP {
     Auth,

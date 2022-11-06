@@ -9,32 +9,37 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
+use alloc::string::String;
+use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
+
 use super::In;
 
-#[derive(Debug)]
-pub struct BasicSecurityScheme<'a> {
-    pub name: Option<&'a str>,
+#[skip_serializing_none]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BasicSecurityScheme {
+    pub name: Option<String>,
     pub r#in: Option<In>,
 }
 
-impl<'a> BasicSecurityScheme<'a> {
-    pub fn builder() -> BasicSecuritySchemeBuilder<'a> {
+impl BasicSecurityScheme {
+    pub fn builder() -> BasicSecuritySchemeBuilder {
         BasicSecuritySchemeBuilder::default()
     }
 }
 
 #[derive(Debug, Default)]
-pub struct BasicSecuritySchemeBuilder<'a> {
-    pub name: Option<&'a str>,
+pub struct BasicSecuritySchemeBuilder {
+    pub name: Option<String>,
     pub r#in: Option<In>,
 }
 
-impl<'a> BasicSecuritySchemeBuilder<'a> {
+impl BasicSecuritySchemeBuilder {
     pub fn new() -> Self {
         BasicSecuritySchemeBuilder::default()
     }
 
-    pub fn name(mut self, name: &'a str) -> Self {
+    pub fn name(mut self, name: String) -> Self {
         self.name = Some(name);
         self
     }
@@ -44,7 +49,7 @@ impl<'a> BasicSecuritySchemeBuilder<'a> {
         self
     }
 
-    pub fn build(self) -> BasicSecurityScheme<'a> {
+    pub fn build(self) -> BasicSecurityScheme {
         BasicSecurityScheme {
             name: self.name,
             r#in: self.r#in,

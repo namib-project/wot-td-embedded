@@ -9,9 +9,12 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use super::In;
+use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
 
-#[derive(Debug)]
+use super::In;
+#[skip_serializing_none]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ApiKeySecurityScheme<'a> {
     pub name: Option<&'a str>,
     pub r#in: Option<In>,

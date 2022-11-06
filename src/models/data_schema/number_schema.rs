@@ -9,28 +9,13 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use crate::models::serialize_field;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NumberSchema {
     pub minimum: Option<f64>,
     pub maximum: Option<f64>,
     pub exclusive_minimum: Option<f64>,
     pub exclusive_maximum: Option<f64>,
     pub multiple_of: Option<f64>,
-}
-
-impl NumberSchema {
-    pub fn serialize_to_map<S>(&self, mut map: S::SerializeMap) -> Result<S::SerializeMap, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serialize_field::<f64, S>(&self.minimum, "minimum", &mut map)?;
-        serialize_field::<f64, S>(&self.maximum, "maximum", &mut map)?;
-        serialize_field::<f64, S>(&self.exclusive_minimum, "exclusiveMinimum", &mut map)?;
-        serialize_field::<f64, S>(&self.exclusive_maximum, "exclusiveMaximum", &mut map)?;
-        serialize_field::<f64, S>(&self.multiple_of, "multipleOf", &mut map)?;
-
-        Ok(map)
-    }
 }

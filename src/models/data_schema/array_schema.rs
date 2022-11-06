@@ -9,26 +9,15 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use crate::{data_structures::array::Array, models::serialize_field};
+use alloc::vec::Vec;
+use serde::{Deserialize, Serialize};
 
 use super::DataSchema;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ArraySchema<'a> {
-    pub items: Option<Array<'a, &'a DataSchema<'a>>>,
+    #[serde(borrow)]
+    pub items: Option<Vec<DataSchema<'a>>>,
     pub min_items: Option<u64>,
     pub max_items: Option<u64>,
-}
-
-impl<'a> ArraySchema<'a> {
-    pub fn serialize_to_map<S>(&self, mut map: S::SerializeMap) -> Result<S::SerializeMap, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serialize_field::<Array<&'a DataSchema>, S>(&self.items, "items", &mut map)?;
-        serialize_field::<u64, S>(&self.min_items, "maxItems", &mut map)?;
-        serialize_field::<u64, S>(&self.max_items, "minItems", &mut map)?;
-
-        Ok(map)
-    }
 }

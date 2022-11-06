@@ -9,13 +9,16 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use crate::data_structures::array::Array;
+use alloc::vec::Vec;
+use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
 
-#[derive(Debug)]
+#[skip_serializing_none]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AceSecurityScheme<'a> {
     pub authorization_server: Option<&'a str>,
     pub audience: Option<&'a str>,
-    pub scopes: Option<Array<'a, &'a str>>,
+    pub scopes: Option<Vec<&'a str>>,
     pub cnonce: Option<bool>,
 }
 
@@ -29,7 +32,7 @@ impl<'a> AceSecurityScheme<'a> {
 pub struct AceSecuritySchemeBuilder<'a> {
     pub authorization_server: Option<&'a str>,
     pub audience: Option<&'a str>,
-    pub scopes: Option<Array<'a, &'a str>>,
+    pub scopes: Option<Vec<&'a str>>,
     pub cnonce: Option<bool>,
 }
 
@@ -47,7 +50,7 @@ impl<'a> AceSecuritySchemeBuilder<'a> {
         self.audience = Some(audience);
         self
     }
-    pub fn scopes(mut self, scopes: Array<'a, &'a str>) -> Self {
+    pub fn scopes(mut self, scopes: Vec<&'a str>) -> Self {
         self.scopes = Some(scopes);
         self
     }

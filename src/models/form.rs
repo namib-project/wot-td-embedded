@@ -9,32 +9,31 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use serde::Serialize;
+use alloc::vec::Vec;
+use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
-
-use crate::data_structures::array::Array;
 
 use super::{
     additional_expected_response::AdditionalExpectedResponse, expected_response::ExpectedResponse,
 };
 
 #[skip_serializing_none]
-#[derive(Serialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Form<'a> {
     pub href: &'a str,
     pub content_type: Option<&'a str>,
     pub content_coding: Option<&'a str>,
-    pub security: Option<Array<'a, &'a str>>,
-    pub scopes: Option<Array<'a, &'a str>>,
-    pub response: Option<ExpectedResponse<'a>>,
-    pub additional_responses: Option<Array<'a, AdditionalExpectedResponse<'a>>>,
+    pub security: Option<Vec<&'a str>>,
+    pub scopes: Option<Vec<&'a str>>,
+    pub response: Option<ExpectedResponse>,
+    pub additional_responses: Option<Vec<AdditionalExpectedResponse>>,
     pub subprotocol: Option<&'a str>,
-    pub op: Option<Array<'a, OperationType>>,
+    pub op: Option<Vec<OperationType>>,
 }
 
 impl<'a> Form<'a> {
-    pub fn builder(href: &'a str) -> FormBuilder<'a> {
+    pub fn builder(href: &'a str) -> FormBuilder {
         FormBuilder::new(href)
     }
 }
@@ -44,16 +43,16 @@ pub struct FormBuilder<'a> {
     pub href: &'a str,
     pub content_type: Option<&'a str>,
     pub content_coding: Option<&'a str>,
-    pub security: Option<Array<'a, &'a str>>,
-    pub scopes: Option<Array<'a, &'a str>>,
-    pub response: Option<ExpectedResponse<'a>>,
-    pub additional_responses: Option<Array<'a, AdditionalExpectedResponse<'a>>>,
+    pub security: Option<Vec<&'a str>>,
+    pub scopes: Option<Vec<&'a str>>,
+    pub response: Option<ExpectedResponse>,
+    pub additional_responses: Option<Vec<AdditionalExpectedResponse>>,
     pub subprotocol: Option<&'a str>,
-    pub op: Option<Array<'a, OperationType>>,
+    pub op: Option<Vec<OperationType>>,
 }
 
 impl<'a> FormBuilder<'a> {
-    pub fn new(href: &'a str) -> FormBuilder<'a> {
+    pub fn new(href: &'a str) -> Self {
         FormBuilder {
             href,
             ..Default::default()
@@ -70,24 +69,24 @@ impl<'a> FormBuilder<'a> {
         self
     }
 
-    pub fn security(mut self, security: Array<'a, &'a str>) -> FormBuilder<'a> {
+    pub fn security(mut self, security: Vec<&'a str>) -> Self {
         self.security = Some(security);
         self
     }
 
-    pub fn scopes(mut self, scopes: Array<'a, &'a str>) -> FormBuilder<'a> {
+    pub fn scopes(mut self, scopes: Vec<&'a str>) -> Self {
         self.scopes = Some(scopes);
         self
     }
 
-    pub fn response(mut self, response: ExpectedResponse<'a>) -> FormBuilder<'a> {
+    pub fn response(mut self, response: ExpectedResponse) -> Self {
         self.response = Some(response);
         self
     }
 
     pub fn additional_responses(
         mut self,
-        additional_responses: Array<'a, AdditionalExpectedResponse<'a>>,
+        additional_responses: Vec<AdditionalExpectedResponse>,
     ) -> FormBuilder<'a> {
         self.additional_responses = Some(additional_responses);
         self
@@ -98,7 +97,7 @@ impl<'a> FormBuilder<'a> {
         self
     }
 
-    pub fn op(mut self, op: Array<'a, OperationType>) -> FormBuilder<'a> {
+    pub fn op(mut self, op: Vec<OperationType>) -> Self {
         self.op = Some(op);
         self
     }
@@ -118,7 +117,7 @@ impl<'a> FormBuilder<'a> {
     }
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum OperationType {
     Readproperty,
