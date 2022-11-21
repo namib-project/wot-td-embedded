@@ -12,7 +12,7 @@
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 
-use crate::data_structures::{array::Array, map::Map};
+use crate::data_structures::{Array, Map};
 
 use super::{data_schema::DataSchema, form::Form};
 
@@ -20,8 +20,8 @@ use super::{data_schema::DataSchema, form::Form};
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Event<'a> {
-    pub forms: Array<'a, Form<'a>>,
-    pub json_ld_type: Option<Array<'a, &'a str>>,
+    pub forms: Array<Form<'a>>,
+    pub json_ld_type: Option<Array<&'a str>>,
     pub title: Option<&'a str>,
     pub titles: Option<Map<'a, &'a str>>,
     pub description: Option<&'a str>,
@@ -33,15 +33,15 @@ pub struct Event<'a> {
 }
 
 impl<'a> Event<'a> {
-    pub fn builder(forms: Array<'a, Form<'a>>) -> EventBuilder<'a> {
+    pub fn builder(forms: Array<Form<'a>>) -> EventBuilder<'a> {
         EventBuilder::new(forms)
     }
 }
 
 #[derive(Debug)]
 pub struct EventBuilder<'a> {
-    pub forms: Array<'a, Form<'a>>,
-    pub json_ld_type: Option<Array<'a, &'a str>>,
+    pub forms: Array<Form<'a>>,
+    pub json_ld_type: Option<Array<&'a str>>,
     pub title: Option<&'a str>,
     pub titles: Option<Map<'a, &'a str>>,
     pub description: Option<&'a str>,
@@ -53,7 +53,7 @@ pub struct EventBuilder<'a> {
 }
 
 impl<'a> EventBuilder<'a> {
-    pub fn new(forms: Array<'a, Form<'a>>) -> EventBuilder<'a> {
+    pub fn new(forms: Array<Form<'a>>) -> EventBuilder<'a> {
         EventBuilder {
             forms,
             json_ld_type: None,

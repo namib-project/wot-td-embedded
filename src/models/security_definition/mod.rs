@@ -22,10 +22,7 @@ use serde::{ser::SerializeMap, Serialize};
 
 use crate::{
     constants::JSON_LD_TYPE,
-    data_structures::{
-        array::{Array, ArrayEntry},
-        map::{Map, MapEntry},
-    },
+    data_structures::{Array, Map},
     models::serialize_field,
 };
 
@@ -39,7 +36,7 @@ use self::{
 
 #[derive(Debug)]
 pub struct SecurityScheme<'a> {
-    pub json_ld_type: Option<Array<'a, &'a str>>,
+    pub json_ld_type: Option<Array<&'a str>>,
     pub description: Option<&'a str>,
     pub descriptions: Option<&'a Map<'a, &'a str>>,
     pub proxy: Option<&'a str>,
@@ -54,7 +51,7 @@ impl<'a> SecurityScheme<'a> {
 
 #[derive(Debug)]
 pub struct SecuritySchemeBuilder<'a> {
-    pub json_ld_type: Option<Array<'a, &'a str>>,
+    pub json_ld_type: Option<Array<&'a str>>,
     pub description: Option<&'a str>,
     pub descriptions: Option<&'a Map<'a, &'a str>>,
     pub proxy: Option<&'a str>,
@@ -72,7 +69,7 @@ impl<'a> SecuritySchemeBuilder<'a> {
         }
     }
 
-    pub fn json_ld_type(mut self, json_ld_type: Array<'a, &'a str>) -> Self {
+    pub fn json_ld_type(mut self, json_ld_type: Array<&'a str>) -> Self {
         self.json_ld_type = Some(json_ld_type);
         self
     }

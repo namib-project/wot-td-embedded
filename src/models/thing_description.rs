@@ -14,7 +14,7 @@ use serde_with::skip_serializing_none;
 
 use crate::{
     constants::WOT_TD_11_CONTEXT,
-    data_structures::{array::Array, map::Map},
+    data_structures::{Array, Map},
 };
 
 use super::{
@@ -40,9 +40,9 @@ impl<'a> Default for ContextEntry<'a> {
 #[serde(rename_all = "camelCase")]
 pub struct ThingDescription<'a> {
     #[serde(rename = "@context")]
-    pub context: Array<'a, ContextEntry<'a>>,
+    pub context: Array<ContextEntry<'a>>,
     #[serde(rename = "@type")]
-    pub json_ld_type: Option<Array<'a, &'a str>>,
+    pub json_ld_type: Option<Array<&'a str>>,
     pub id: Option<&'a str>,
     pub title: &'a str,
     pub titles: Option<Map<'a, &'a str>>,
@@ -56,11 +56,11 @@ pub struct ThingDescription<'a> {
     pub properties: Option<Map<'a, Property<'a>>>,
     pub actions: Option<Map<'a, Action<'a>>>,
     pub events: Option<Map<'a, Event<'a>>>,
-    pub links: Option<Array<'a, Link<'a>>>,
-    pub forms: Option<Array<'a, Form<'a>>>,
-    pub security: Option<Array<'a, &'a str>>,
+    pub links: Option<Array<Link<'a>>>,
+    pub forms: Option<Array<Form<'a>>>,
+    pub security: Option<Array<&'a str>>,
     pub security_definitions: Option<Map<'a, SecurityScheme<'a>>>,
-    pub profile: Option<Array<'a, &'a str>>,
+    pub profile: Option<Array<&'a str>>,
     pub schema_definitions: Option<Map<'a, DataSchema<'a>>>,
     pub uri_variables: Option<Map<'a, DataSchema<'a>>>,
 }
@@ -73,8 +73,8 @@ impl<'a> ThingDescription<'a> {
 
 #[derive(Debug)]
 pub struct ThingDescriptionBuilder<'a> {
-    pub context: Array<'a, ContextEntry<'a>>,
-    pub json_ld_type: Option<Array<'a, &'a str>>,
+    pub context: Array<ContextEntry<'a>>,
+    pub json_ld_type: Option<Array<&'a str>>,
     pub id: Option<&'a str>,
     pub title: &'a str,
     pub titles: Option<Map<'a, &'a str>>,
@@ -88,11 +88,11 @@ pub struct ThingDescriptionBuilder<'a> {
     pub properties: Option<Map<'a, Property<'a>>>,
     pub actions: Option<Map<'a, Action<'a>>>,
     pub events: Option<Map<'a, Event<'a>>>,
-    pub links: Option<Array<'a, Link<'a>>>,
-    pub forms: Option<Array<'a, Form<'a>>>,
-    pub security: Option<Array<'a, &'a str>>,
+    pub links: Option<Array<Link<'a>>>,
+    pub forms: Option<Array<Form<'a>>>,
+    pub security: Option<Array<&'a str>>,
     pub security_definitions: Option<Map<'a, SecurityScheme<'a>>>,
-    pub profile: Option<Array<'a, &'a str>>,
+    pub profile: Option<Array<&'a str>>,
     pub schema_definitions: Option<Map<'a, DataSchema<'a>>>,
     pub uri_variables: Option<Map<'a, DataSchema<'a>>>,
 }
@@ -140,7 +140,7 @@ impl<'a> ThingDescriptionBuilder<'a> {
         }
     }
 
-    pub fn context(mut self, context: Array<'a, ContextEntry<'a>>) -> ThingDescriptionBuilder<'a> {
+    pub fn context(mut self, context: Array<ContextEntry<'a>>) -> ThingDescriptionBuilder<'a> {
         self.context = context;
         self
     }
@@ -200,22 +200,22 @@ impl<'a> ThingDescriptionBuilder<'a> {
         self
     }
 
-    pub fn forms(mut self, forms: Array<'a, Form<'a>>) -> ThingDescriptionBuilder<'a> {
+    pub fn forms(mut self, forms: Array<Form<'a>>) -> ThingDescriptionBuilder<'a> {
         self.forms = Some(forms);
         self
     }
 
-    pub fn links(mut self, links: Array<'a, Link<'a>>) -> ThingDescriptionBuilder<'a> {
+    pub fn links(mut self, links: Array<Link<'a>>) -> ThingDescriptionBuilder<'a> {
         self.links = Some(links);
         self
     }
 
-    pub fn json_ld_type(mut self, json_ld_type: Array<'a, &'a str>) -> ThingDescriptionBuilder<'a> {
+    pub fn json_ld_type(mut self, json_ld_type: Array<&'a str>) -> ThingDescriptionBuilder<'a> {
         self.json_ld_type = Some(json_ld_type);
         self
     }
 
-    pub fn security(mut self, security: Array<'a, &'a str>) -> ThingDescriptionBuilder<'a> {
+    pub fn security(mut self, security: Array<&'a str>) -> ThingDescriptionBuilder<'a> {
         self.security = Some(security);
         self
     }
@@ -268,12 +268,9 @@ impl<'a> ThingDescriptionBuilder<'a> {
 mod tests {
 
     use crate::{
-        data_structures::{
-            array::{Array, ArrayEntry},
-            map::{Map, MapEntry},
-        },
+        data_structures::Map,
         models::{
-            action::{Action, ActionBuilder},
+            action::Action,
             data_schema::{DataSchema, DataType},
             event::Event,
             form::{Form, FormBuilder, OperationType},
@@ -288,79 +285,64 @@ mod tests {
 
     #[test]
     fn serialize_thing_description() -> Result<(), Error> {
-        let mut action1_form =
-            Array::new_entry(FormBuilder::new("coaps://example.org/toggle").build());
-        let action1_forms = Array::new().add(&mut action1_form);
-
-        let mut action2_form =
-            Array::new_entry(FormBuilder::new("coaps://example.org/toggle2").build());
-        let action2_forms = Array::new().add(&mut action2_form);
-
-        let mut action1 = Map::new_entry(
-            "toggle",
-            ActionBuilder::new(action1_forms)
+        let actions = Map::new(vec![
+            (
+                "toggle",
+                Action::builder(vec![FormBuilder::new("coaps://example.org/toggle")
+                    .op(vec![OperationType::Invokeaction])
+                    .build()])
                 .input(DataSchema::builder().title("Toggle Data").build())
                 .build(),
-        );
-        let mut action2 = Map::new_entry("toggle2", ActionBuilder::new(action2_forms).build());
+            ),
+            (
+                "toggle2",
+                Action::builder(vec![FormBuilder::new("coaps://example.org/toggle2").build()])
+                    .build(),
+            ),
+        ]);
 
-        let actions = Map::new().add(&mut action1).add(&mut action2);
-
-        let mut link_entry = Array::new_entry(Link::new("https://example.org"));
-        let links = Array::new().add(&mut link_entry);
-
-        let mut json_ld_type_entry = Array::new_entry("saref:LightSwitch");
-        let json_ld_type = Array::new().add(&mut json_ld_type_entry);
-
+        let links = vec![Link::new("https://example.org")];
+        let json_ld_type = vec!["saref:LightSwitch"];
         const NO_SEC_KEY: &str = "nosec_sc";
-        let mut security_entry = Array::new_entry(NO_SEC_KEY);
-        let security = Array::new().add(&mut security_entry);
+        let security = vec![NO_SEC_KEY];
 
-        let mut security_definitions = Map::new_entry(
+        let security_definitions = Map::new(vec![(
             NO_SEC_KEY,
             SecurityScheme::builder(SecuritySchemeType::Nosec).build(),
-        );
-        let security_definitions = Map::new().add(&mut security_definitions);
+        )]);
 
-        let mut property_form =
-            Array::new_entry(FormBuilder::new("coaps://example.org/status").build());
-        let mut property_forms = Array::new_entry(&mut property_form);
-        let mut property = Map::new_entry(
+        let properties = Map::new(vec![(
             "status",
             Property::builder(
-                Array::new(),
+                vec![Form::builder("coaps://example.org/status").build()],
                 DataSchema::builder()
                     .title("Status")
                     .data_type(DataType::Boolean)
                     .build(),
             )
             .build(),
-        );
-        let properties = Map::new().add(&mut property);
+        )]);
 
-        let mut default_context = Array::new_entry(ContextEntry::default());
+        let context = vec![
+            ContextEntry::default(),
+            ContextEntry::MapEntry(Map::new(vec![(
+                "cov",
+                "http://www.example.org/coap-binding#",
+            )])),
+        ];
 
-        let mut context_map_entry = Map::new_entry("cov", "http://www.example.org/coap-binding#");
-        let mut context_map = Array::new_entry(ContextEntry::MapEntry(
-            Map::new().add(&mut context_map_entry),
-        ));
-
-        let context = Array::new().add(&mut default_context).add(&mut context_map);
-
-        let mut event_form =
-            Array::new_entry(FormBuilder::new("coaps://example.org/overheating").build());
-        let event_forms = Array::new().add(&mut event_form);
-        let mut event = Map::new_entry(
+        let events = Map::new(vec![(
             "overheating",
-            Event::builder(event_forms)
-                .data(
-                    DataSchema::builder()
-                        .data_type(DataType::Integer(None))
-                        .build(),
-                )
-                .build(),
-        );
-        let events = Map::new().add(&mut event);
+            Event::builder(vec![
+                Form::builder("coaps://example.org/overheating").build()
+            ])
+            .data(
+                DataSchema::builder()
+                    .data_type(DataType::Integer(None))
+                    .build(),
+            )
+            .build(),
+        )]);
 
         let thing_description = ThingDescription::builder()
             .context(context)

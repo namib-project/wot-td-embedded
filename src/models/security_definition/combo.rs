@@ -9,7 +9,7 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use crate::data_structures::array::Array;
+use crate::data_structures::Array;
 
 #[derive(Debug)]
 pub struct ComboSecurityScheme<'a> {
@@ -24,6 +24,6 @@ impl<'a> ComboSecurityScheme<'a> {
 
 #[derive(Debug)]
 pub enum ComboVariant<'a> {
-    AllOf(Array<'a, &'a str>),
-    OneOf(Array<'a, &'a str>),
+    AllOf(Array<&'a str>),
+    OneOf(Array<&'a str>),
 }

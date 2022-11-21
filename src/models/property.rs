@@ -11,19 +11,19 @@
 
 use serde::{ser::SerializeMap, Serialize};
 
-use crate::data_structures::array::Array;
+use crate::data_structures::Array;
 
 use super::{data_schema::DataSchema, form::Form};
 
 #[derive(Debug)]
 pub struct Property<'a> {
-    pub forms: Array<'a, Form<'a>>,
+    pub forms: Array<Form<'a>>,
     pub data_schema: DataSchema<'a>,
     pub observable: Option<bool>,
 }
 
 impl<'a> Property<'a> {
-    pub fn builder(forms: Array<'a, Form<'a>>, data_schema: DataSchema<'a>) -> PropertyBuilder<'a> {
+    pub fn builder(forms: Array<Form<'a>>, data_schema: DataSchema<'a>) -> PropertyBuilder<'a> {
         PropertyBuilder::new(forms, data_schema)
     }
 }
@@ -47,13 +47,13 @@ impl<'a> Serialize for Property<'a> {
 
 #[derive(Debug)]
 pub struct PropertyBuilder<'a> {
-    pub forms: Array<'a, Form<'a>>,
+    pub forms: Array<Form<'a>>,
     pub data_schema: DataSchema<'a>,
     pub observable: Option<bool>,
 }
 
 impl<'a> PropertyBuilder<'a> {
-    pub fn new(forms: Array<'a, Form<'a>>, data_schema: DataSchema<'a>) -> PropertyBuilder<'a> {
+    pub fn new(forms: Array<Form<'a>>, data_schema: DataSchema<'a>) -> PropertyBuilder<'a> {
         PropertyBuilder {
             forms,
             data_schema,

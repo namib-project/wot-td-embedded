@@ -11,15 +11,13 @@
 
 use serde::{ser::SerializeSeq, Serialize};
 
-// pub type Array<'a, T> = ArrayEntry<'a, T>;
-
 #[derive(Debug, Default)]
-pub struct Array<'a, T> {
+pub struct Array<T> {
     first: Option<&'a ArrayEntry<'a, T>>,
     last: Option<&'a ArrayEntry<'a, T>>,
 }
 
-impl<'a, T> Array<'a, T> {
+impl<'a, T> Array<T> {
     pub fn new() -> Self {
         Array {
             first: None,
@@ -93,7 +91,7 @@ impl<'a, T> Iterator for Iter<'a, T> {
     }
 }
 
-impl<'a, T: Serialize> Serialize for Array<'a, T> {
+impl<'a, T: Serialize> Serialize for Array<T> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,

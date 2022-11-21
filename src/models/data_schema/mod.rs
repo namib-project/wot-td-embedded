@@ -20,10 +20,7 @@ use serde_with::skip_serializing_none;
 
 use crate::{
     constants::JSON_LD_TYPE,
-    data_structures::{
-        array::{Array, ArrayEntry},
-        map::{Map, MapEntry},
-    },
+    data_structures::{Array, Map},
     models::serialize_field,
 };
 
@@ -42,7 +39,7 @@ macro_rules! serialize_schema {
 
 #[derive(Debug)]
 pub struct DataSchema<'a> {
-    pub json_ld_type: Option<Array<'a, &'a str>>,
+    pub json_ld_type: Option<Array<&'a str>>,
     pub title: Option<&'a str>,
     pub titles: Option<Map<'a, &'a str>>,
     pub description: Option<&'a str>,
@@ -50,8 +47,8 @@ pub struct DataSchema<'a> {
     pub constant: Option<DataStructure<'a>>,
     pub default: Option<DataStructure<'a>>,
     pub unit: Option<&'a str>,
-    pub one_of: Option<Array<'a, &'a DataSchema<'a>>>,
-    pub enumeration: Option<Array<'a, DataStructure<'a>>>,
+    pub one_of: Option<Array<&'a DataSchema<'a>>>,
+    pub enumeration: Option<Array<DataStructure<'a>>>,
     pub read_only: Option<bool>,
     pub write_only: Option<bool>,
     pub format: Option<&'a str>,
@@ -80,7 +77,7 @@ impl<'a> Serialize for DataSchema<'a> {
 
 #[derive(Debug, Default)]
 pub struct DataSchemaBuilder<'a> {
-    pub json_ld_type: Option<Array<'a, &'a str>>,
+    pub json_ld_type: Option<Array<&'a str>>,
     pub title: Option<&'a str>,
     pub titles: Option<Map<'a, &'a str>>,
     pub description: Option<&'a str>,
@@ -88,8 +85,8 @@ pub struct DataSchemaBuilder<'a> {
     pub constant: Option<DataStructure<'a>>,
     pub default: Option<DataStructure<'a>>,
     pub unit: Option<&'a str>,
-    pub one_of: Option<Array<'a, &'a DataSchema<'a>>>,
-    pub enumeration: Option<Array<'a, DataStructure<'a>>>,
+    pub one_of: Option<Array<&'a DataSchema<'a>>>,
+    pub enumeration: Option<Array<DataStructure<'a>>>,
     pub read_only: Option<bool>,
     pub write_only: Option<bool>,
     pub format: Option<&'a str>,
@@ -104,7 +101,7 @@ impl<'a> DataSchemaBuilder<'a> {
         }
     }
 
-    pub fn json_ld_type(mut self, json_ld_type: Array<'a, &'a str>) -> Self {
+    pub fn json_ld_type(mut self, json_ld_type: Array<&'a str>) -> Self {
         self.json_ld_type = Some(json_ld_type);
         self
     }
@@ -144,12 +141,12 @@ impl<'a> DataSchemaBuilder<'a> {
         self
     }
 
-    pub fn one_of(mut self, one_of: Array<'a, &'a DataSchema<'a>>) -> Self {
+    pub fn one_of(mut self, one_of: Array<&'a DataSchema<'a>>) -> Self {
         self.one_of = Some(one_of);
         self
     }
 
-    pub fn enumeration(mut self, enumeration: Array<'a, DataStructure<'a>>) -> Self {
+    pub fn enumeration(mut self, enumeration: Array<DataStructure<'a>>) -> Self {
         self.enumeration = Some(enumeration);
         self
     }
@@ -205,7 +202,7 @@ impl<'a> DataSchema<'a> {
     where
         S: serde::Serializer,
     {
-        serialize_field::<Array<'a, &'a str>, S>(&self.json_ld_type, JSON_LD_TYPE, &mut map)?;
+        serialize_field::<Array<&'a str>, S>(&self.json_ld_type, JSON_LD_TYPE, &mut map)?;
         serialize_field::<&str, S>(&self.title, "title", &mut map)?;
         serialize_field::<Map<'a, &'a str>, S>(&self.titles, "titles", &mut map)?;
         serialize_field::<&str, S>(&self.description, "description", &mut map)?;
@@ -213,8 +210,8 @@ impl<'a> DataSchema<'a> {
         serialize_field::<DataStructure, S>(&self.constant, "constant", &mut map)?;
         serialize_field::<DataStructure, S>(&self.default, "default", &mut map)?;
         serialize_field::<&str, S>(&self.unit, "unit", &mut map)?;
-        serialize_field::<Array<'a, &'a DataSchema>, S>(&self.one_of, "oneOf", &mut map)?;
-        serialize_field::<Array<'a, DataStructure>, S>(&self.enumeration, "enum", &mut map)?;
+        serialize_field::<Array<&'a DataSchema>, S>(&self.one_of, "oneOf", &mut map)?;
+        serialize_field::<Array<DataStructure>, S>(&self.enumeration, "enum", &mut map)?;
         serialize_field::<bool, S>(&self.read_only, "readOnly", &mut map)?;
         serialize_field::<bool, S>(&self.write_only, "writeOnly", &mut map)?;
         serialize_field::<&str, S>(&self.format, "format", &mut map)?;
@@ -255,7 +252,7 @@ impl<'a> DataSchema<'a> {
 
         if let Some(additional_fields) = &self.additional_fields {
             for map_entry in additional_fields.iter() {
-                map.serialize_entry(map_entry.key, map_entry.value)?;
+                map.serialize_entry(map_entry.0, &map_entry.1)?;
             }
         }
 
@@ -282,5 +279,5 @@ pub enum DataStructure<'a> {
     Integer(i64),
     Number(f64),
     Object(Map<'a, &'a DataStructure<'a>>),
-    Array(Array<'a, &'a DataStructure<'a>>),
+    Array(Array<&'a DataStructure<'a>>),
 }

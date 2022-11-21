@@ -9,13 +9,13 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use crate::{data_structures::array::Array, models::serialize_field};
+use crate::{data_structures::Array, models::serialize_field};
 
 use super::DataSchema;
 
 #[derive(Debug)]
 pub struct ArraySchema<'a> {
-    pub items: Option<Array<'a, &'a DataSchema<'a>>>,
+    pub items: Option<Array<&'a DataSchema<'a>>>,
     pub min_items: Option<u64>,
     pub max_items: Option<u64>,
 }

@@ -12,7 +12,7 @@
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 
-use crate::data_structures::array::Array;
+use crate::data_structures::Array;
 
 #[skip_serializing_none]
 #[derive(Serialize, Debug, Default)]
@@ -24,7 +24,7 @@ pub struct Link<'a> {
     pub rel: Option<&'a str>,
     pub anchor: Option<&'a str>,
     pub sizes: Option<&'a str>,
-    pub hreflang: Option<Array<'a, &'a str>>,
+    pub hreflang: Option<Array<&'a str>>,
 }
 
 impl<'a> Link<'a> {
@@ -47,7 +47,7 @@ pub struct LinkBuilder<'a> {
     pub rel: Option<&'a str>,
     pub anchor: Option<&'a str>,
     pub sizes: Option<&'a str>,
-    pub hreflang: Option<Array<'a, &'a str>>,
+    pub hreflang: Option<Array<&'a str>>,
 }
 
 impl<'a> LinkBuilder<'a> {
@@ -78,7 +78,7 @@ impl<'a> LinkBuilder<'a> {
         self
     }
 
-    pub fn hreflang(mut self, hreflang: Array<'a, &'a str>) -> LinkBuilder<'a> {
+    pub fn hreflang(mut self, hreflang: Array<&'a str>) -> LinkBuilder<'a> {
         self.hreflang = Some(hreflang);
         self
     }
@@ -99,14 +99,11 @@ impl<'a> LinkBuilder<'a> {
 mod tests {
     use serde_json_core::{heapless::String, ser::Error, to_string};
 
-    use crate::data_structures::array::{Array, ArrayEntry};
-
     use super::Link;
 
     #[test]
     fn serialize() -> Result<(), Error> {
-        let mut hreflang_entry = ArrayEntry::<&str>::new("de");
-        let hreflang = Array::<&str>::new().add(&mut hreflang_entry);
+        let hreflang = vec!["de"];
 
         let additional_expected_response = Link::builder("coap://example.org")
             .link_type("test:testLink")

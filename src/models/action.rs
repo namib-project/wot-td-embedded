@@ -12,7 +12,7 @@
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 
-use crate::data_structures::{array::Array, map::Map};
+use crate::data_structures::{Array, Map};
 
 use super::{data_schema::DataSchema, form::Form};
 
@@ -20,9 +20,9 @@ use super::{data_schema::DataSchema, form::Form};
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Action<'a> {
-    pub forms: Array<'a, Form<'a>>,
+    pub forms: Array<Form<'a>>,
     #[serde(rename = "@type")]
-    pub json_ld_type: Option<Array<'a, &'a str>>,
+    pub json_ld_type: Option<Array<&'a str>>,
     pub title: Option<&'a str>,
     pub titles: Option<Map<'a, &'a str>>,
     pub description: Option<&'a str>,
@@ -35,7 +35,7 @@ pub struct Action<'a> {
 }
 
 impl<'a> Action<'a> {
-    pub fn builder(forms: Array<'a, Form<'a>>) -> ActionBuilder<'a> {
+    pub fn builder(forms: Array<Form<'a>>) -> ActionBuilder<'a> {
         ActionBuilder::new(forms)
     }
 }
@@ -43,8 +43,8 @@ impl<'a> Action<'a> {
 #[derive(Debug)]
 
 pub struct ActionBuilder<'a> {
-    pub forms: Array<'a, Form<'a>>,
-    pub json_ld_type: Option<Array<'a, &'a str>>,
+    pub forms: Array<Form<'a>>,
+    pub json_ld_type: Option<Array<&'a str>>,
     pub title: Option<&'a str>,
     pub titles: Option<Map<'a, &'a str>>,
     pub description: Option<&'a str>,
@@ -57,7 +57,7 @@ pub struct ActionBuilder<'a> {
 }
 
 impl<'a> ActionBuilder<'a> {
-    pub fn new(forms: Array<'a, Form<'a>>) -> ActionBuilder<'a> {
+    pub fn new(forms: Array<Form<'a>>) -> ActionBuilder<'a> {
         ActionBuilder {
             forms,
             json_ld_type: None,
@@ -73,7 +73,7 @@ impl<'a> ActionBuilder<'a> {
         }
     }
 
-    pub fn json_ld_type(mut self, json_ld_type: Array<'a, &'a str>) -> ActionBuilder<'a> {
+    pub fn json_ld_type(mut self, json_ld_type: Array<&'a str>) -> ActionBuilder<'a> {
         self.json_ld_type = Some(json_ld_type);
         self
     }

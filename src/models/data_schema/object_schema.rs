@@ -10,15 +10,13 @@
  */
 
 use super::DataSchema;
-use crate::data_structures::array::ArrayEntry;
-use crate::data_structures::map::MapEntry;
-use crate::data_structures::{array::Array, map::Map};
+use crate::data_structures::{Array, Map};
 use crate::models::serialize_field;
 
 #[derive(Debug)]
 pub struct ObjectSchema<'a> {
     pub properties: Option<Map<'a, &'a DataSchema<'a>>>,
-    pub required: Option<Array<'a, &'a str>>,
+    pub required: Option<Array<&'a str>>,
 }
 
 impl<'a> ObjectSchema<'a> {
