@@ -11,7 +11,6 @@ keywords = ["web-of-things", "webofthings", "wot", "iot", "embedded", "no_std"]
 serde = { version = "1.0", default-features = false, features = ["derive", "alloc"] }
 serde_derive = "1.0.144"
 serde_with = { version = "2.0.0", default-features = false, features = ["macros"] }
-tsil_cev = { version = "1.1.0", features = ["serde"] }
 
 [dev-dependencies]
 serde-json-core = "0.4.0"
