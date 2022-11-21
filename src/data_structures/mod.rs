@@ -17,8 +17,6 @@ use core::slice::Iter;
 use alloc::vec::Vec;
 use serde::{ser::SerializeMap, Serialize};
 
-pub type Array<T> = Vec<T>;
-// pub type Map<'a, T> = Vec<(&'a str, T)>;
 #[derive(Debug, Default)]
 pub struct Map<'a, T: Serialize> {
     entries: Vec<(&'a str, T)>,

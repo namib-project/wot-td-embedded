@@ -9,13 +9,13 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use crate::data_structures::Array;
+use alloc::vec::Vec;
 
 #[derive(Debug)]
 pub struct AceSecurityScheme<'a> {
     pub authorization_server: Option<&'a str>,
     pub audience: Option<&'a str>,
-    pub scopes: Option<Array<&'a str>>,
+    pub scopes: Option<Vec<&'a str>>,
     pub cnonce: Option<bool>,
 }
 
@@ -29,7 +29,7 @@ impl<'a> AceSecurityScheme<'a> {
 pub struct AceSecuritySchemeBuilder<'a> {
     pub authorization_server: Option<&'a str>,
     pub audience: Option<&'a str>,
-    pub scopes: Option<Array<&'a str>>,
+    pub scopes: Option<Vec<&'a str>>,
     pub cnonce: Option<bool>,
 }
 
@@ -47,7 +47,7 @@ impl<'a> AceSecuritySchemeBuilder<'a> {
         self.audience = Some(audience);
         self
     }
-    pub fn scopes(mut self, scopes: Array<&'a str>) -> Self {
+    pub fn scopes(mut self, scopes: Vec<&'a str>) -> Self {
         self.scopes = Some(scopes);
         self
     }

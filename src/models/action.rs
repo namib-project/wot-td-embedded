@@ -9,10 +9,11 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
+use alloc::vec::Vec;
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 
-use crate::data_structures::{Array, Map};
+use crate::data_structures::Map;
 
 use super::{data_schema::DataSchema, form::Form};
 
@@ -20,9 +21,9 @@ use super::{data_schema::DataSchema, form::Form};
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Action<'a> {
-    pub forms: Array<Form<'a>>,
+    pub forms: Vec<Form<'a>>,
     #[serde(rename = "@type")]
-    pub json_ld_type: Option<Array<&'a str>>,
+    pub json_ld_type: Option<Vec<&'a str>>,
     pub title: Option<&'a str>,
     pub titles: Option<Map<'a, &'a str>>,
     pub description: Option<&'a str>,
@@ -35,7 +36,7 @@ pub struct Action<'a> {
 }
 
 impl<'a> Action<'a> {
-    pub fn builder(forms: Array<Form<'a>>) -> ActionBuilder<'a> {
+    pub fn builder(forms: Vec<Form<'a>>) -> ActionBuilder<'a> {
         ActionBuilder::new(forms)
     }
 }
@@ -43,8 +44,8 @@ impl<'a> Action<'a> {
 #[derive(Debug)]
 
 pub struct ActionBuilder<'a> {
-    pub forms: Array<Form<'a>>,
-    pub json_ld_type: Option<Array<&'a str>>,
+    pub forms: Vec<Form<'a>>,
+    pub json_ld_type: Option<Vec<&'a str>>,
     pub title: Option<&'a str>,
     pub titles: Option<Map<'a, &'a str>>,
     pub description: Option<&'a str>,
@@ -57,7 +58,7 @@ pub struct ActionBuilder<'a> {
 }
 
 impl<'a> ActionBuilder<'a> {
-    pub fn new(forms: Array<Form<'a>>) -> ActionBuilder<'a> {
+    pub fn new(forms: Vec<Form<'a>>) -> ActionBuilder<'a> {
         ActionBuilder {
             forms,
             json_ld_type: None,
@@ -73,7 +74,7 @@ impl<'a> ActionBuilder<'a> {
         }
     }
 
-    pub fn json_ld_type(mut self, json_ld_type: Array<&'a str>) -> ActionBuilder<'a> {
+    pub fn json_ld_type(mut self, json_ld_type: Vec<&'a str>) -> ActionBuilder<'a> {
         self.json_ld_type = Some(json_ld_type);
         self
     }

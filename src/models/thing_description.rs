@@ -9,13 +9,11 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
+use alloc::vec::Vec;
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 
-use crate::{
-    constants::WOT_TD_11_CONTEXT,
-    data_structures::{Array, Map},
-};
+use crate::{constants::WOT_TD_11_CONTEXT, data_structures::Map};
 
 use super::{
     action::Action, data_schema::DataSchema, event::Event, form::Form, link::Link,
@@ -40,9 +38,9 @@ impl<'a> Default for ContextEntry<'a> {
 #[serde(rename_all = "camelCase")]
 pub struct ThingDescription<'a> {
     #[serde(rename = "@context")]
-    pub context: Array<ContextEntry<'a>>,
+    pub context: Vec<ContextEntry<'a>>,
     #[serde(rename = "@type")]
-    pub json_ld_type: Option<Array<&'a str>>,
+    pub json_ld_type: Option<Vec<&'a str>>,
     pub id: Option<&'a str>,
     pub title: &'a str,
     pub titles: Option<Map<'a, &'a str>>,
@@ -56,11 +54,11 @@ pub struct ThingDescription<'a> {
     pub properties: Option<Map<'a, Property<'a>>>,
     pub actions: Option<Map<'a, Action<'a>>>,
     pub events: Option<Map<'a, Event<'a>>>,
-    pub links: Option<Array<Link<'a>>>,
-    pub forms: Option<Array<Form<'a>>>,
-    pub security: Option<Array<&'a str>>,
+    pub links: Option<Vec<Link<'a>>>,
+    pub forms: Option<Vec<Form<'a>>>,
+    pub security: Option<Vec<&'a str>>,
     pub security_definitions: Option<Map<'a, SecurityScheme<'a>>>,
-    pub profile: Option<Array<&'a str>>,
+    pub profile: Option<Vec<&'a str>>,
     pub schema_definitions: Option<Map<'a, DataSchema<'a>>>,
     pub uri_variables: Option<Map<'a, DataSchema<'a>>>,
 }
@@ -73,8 +71,8 @@ impl<'a> ThingDescription<'a> {
 
 #[derive(Debug)]
 pub struct ThingDescriptionBuilder<'a> {
-    pub context: Array<ContextEntry<'a>>,
-    pub json_ld_type: Option<Array<&'a str>>,
+    pub context: Vec<ContextEntry<'a>>,
+    pub json_ld_type: Option<Vec<&'a str>>,
     pub id: Option<&'a str>,
     pub title: &'a str,
     pub titles: Option<Map<'a, &'a str>>,
@@ -88,19 +86,19 @@ pub struct ThingDescriptionBuilder<'a> {
     pub properties: Option<Map<'a, Property<'a>>>,
     pub actions: Option<Map<'a, Action<'a>>>,
     pub events: Option<Map<'a, Event<'a>>>,
-    pub links: Option<Array<Link<'a>>>,
-    pub forms: Option<Array<Form<'a>>>,
-    pub security: Option<Array<&'a str>>,
+    pub links: Option<Vec<Link<'a>>>,
+    pub forms: Option<Vec<Form<'a>>>,
+    pub security: Option<Vec<&'a str>>,
     pub security_definitions: Option<Map<'a, SecurityScheme<'a>>>,
-    pub profile: Option<Array<&'a str>>,
+    pub profile: Option<Vec<&'a str>>,
     pub schema_definitions: Option<Map<'a, DataSchema<'a>>>,
     pub uri_variables: Option<Map<'a, DataSchema<'a>>>,
 }
 
 impl<'a> ThingDescriptionBuilder<'a> {
     fn default() -> Self {
-        //let mut context_entry = Array::new_entry(ContextEntry::default());
-        let context = Array::new(); //.add(&mut context_entry);
+        //let mut context_entry = Vec::new_entry(ContextEntry::default());
+        let context = Vec::new(); //.add(&mut context_entry);
 
         Self {
             context,
@@ -131,8 +129,8 @@ impl<'a> ThingDescriptionBuilder<'a> {
 
 impl<'a> ThingDescriptionBuilder<'a> {
     pub fn new(title: &'a str) -> ThingDescriptionBuilder<'a> {
-        // let mut context_entry = Array::new_entry(ContextEntry::default());
-        let context = Array::new(); //.add(&mut context_entry);
+        // let mut context_entry = Vec::new_entry(ContextEntry::default());
+        let context = Vec::new(); //.add(&mut context_entry);
         ThingDescriptionBuilder {
             title,
             context,
@@ -140,7 +138,7 @@ impl<'a> ThingDescriptionBuilder<'a> {
         }
     }
 
-    pub fn context(mut self, context: Array<ContextEntry<'a>>) -> ThingDescriptionBuilder<'a> {
+    pub fn context(mut self, context: Vec<ContextEntry<'a>>) -> ThingDescriptionBuilder<'a> {
         self.context = context;
         self
     }
@@ -200,22 +198,22 @@ impl<'a> ThingDescriptionBuilder<'a> {
         self
     }
 
-    pub fn forms(mut self, forms: Array<Form<'a>>) -> ThingDescriptionBuilder<'a> {
+    pub fn forms(mut self, forms: Vec<Form<'a>>) -> ThingDescriptionBuilder<'a> {
         self.forms = Some(forms);
         self
     }
 
-    pub fn links(mut self, links: Array<Link<'a>>) -> ThingDescriptionBuilder<'a> {
+    pub fn links(mut self, links: Vec<Link<'a>>) -> ThingDescriptionBuilder<'a> {
         self.links = Some(links);
         self
     }
 
-    pub fn json_ld_type(mut self, json_ld_type: Array<&'a str>) -> ThingDescriptionBuilder<'a> {
+    pub fn json_ld_type(mut self, json_ld_type: Vec<&'a str>) -> ThingDescriptionBuilder<'a> {
         self.json_ld_type = Some(json_ld_type);
         self
     }
 
-    pub fn security(mut self, security: Array<&'a str>) -> ThingDescriptionBuilder<'a> {
+    pub fn security(mut self, security: Vec<&'a str>) -> ThingDescriptionBuilder<'a> {
         self.security = Some(security);
         self
     }

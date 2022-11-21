@@ -9,7 +9,7 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
-use crate::data_structures::Array;
+use alloc::vec::Vec;
 
 #[derive(Debug)]
 pub struct Oauth2SecurityScheme<'a> {
@@ -17,7 +17,7 @@ pub struct Oauth2SecurityScheme<'a> {
     pub authorization: Option<&'a str>,
     pub token: Option<&'a str>,
     pub refresh: Option<&'a str>,
-    pub scopes: Option<Array<&'a str>>,
+    pub scopes: Option<Vec<&'a str>>,
 }
 
 impl<'a> Oauth2SecurityScheme<'a> {
@@ -32,7 +32,7 @@ pub struct Oauth2SecuritySchemeBuilder<'a> {
     pub authorization: Option<&'a str>,
     pub token: Option<&'a str>,
     pub refresh: Option<&'a str>,
-    pub scopes: Option<Array<&'a str>>,
+    pub scopes: Option<Vec<&'a str>>,
 }
 
 impl<'a> Oauth2SecuritySchemeBuilder<'a> {
@@ -58,7 +58,7 @@ impl<'a> Oauth2SecuritySchemeBuilder<'a> {
         self
     }
 
-    pub fn scopes(mut self, scopes: Array<&'a str>) -> Self {
+    pub fn scopes(mut self, scopes: Vec<&'a str>) -> Self {
         self.scopes = Some(scopes);
         self
     }

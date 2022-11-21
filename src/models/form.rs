@@ -9,10 +9,9 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
+use alloc::vec::Vec;
 use serde::Serialize;
 use serde_with::skip_serializing_none;
-
-use crate::data_structures::Array;
 
 use super::{
     additional_expected_response::AdditionalExpectedResponse, expected_response::ExpectedResponse,
@@ -25,12 +24,12 @@ pub struct Form<'a> {
     pub href: &'a str,
     pub content_type: Option<&'a str>,
     pub content_coding: Option<&'a str>,
-    pub security: Option<Array<&'a str>>,
-    pub scopes: Option<Array<&'a str>>,
+    pub security: Option<Vec<&'a str>>,
+    pub scopes: Option<Vec<&'a str>>,
     pub response: Option<ExpectedResponse<'a>>,
-    pub additional_responses: Option<Array<AdditionalExpectedResponse<'a>>>,
+    pub additional_responses: Option<Vec<AdditionalExpectedResponse<'a>>>,
     pub subprotocol: Option<&'a str>,
-    pub op: Option<Array<OperationType>>,
+    pub op: Option<Vec<OperationType>>,
 }
 
 impl<'a> Form<'a> {
@@ -44,12 +43,12 @@ pub struct FormBuilder<'a> {
     pub href: &'a str,
     pub content_type: Option<&'a str>,
     pub content_coding: Option<&'a str>,
-    pub security: Option<Array<&'a str>>,
-    pub scopes: Option<Array<&'a str>>,
+    pub security: Option<Vec<&'a str>>,
+    pub scopes: Option<Vec<&'a str>>,
     pub response: Option<ExpectedResponse<'a>>,
-    pub additional_responses: Option<Array<AdditionalExpectedResponse<'a>>>,
+    pub additional_responses: Option<Vec<AdditionalExpectedResponse<'a>>>,
     pub subprotocol: Option<&'a str>,
-    pub op: Option<Array<OperationType>>,
+    pub op: Option<Vec<OperationType>>,
 }
 
 impl<'a> FormBuilder<'a> {
@@ -70,12 +69,12 @@ impl<'a> FormBuilder<'a> {
         self
     }
 
-    pub fn security(mut self, security: Array<&'a str>) -> FormBuilder<'a> {
+    pub fn security(mut self, security: Vec<&'a str>) -> FormBuilder<'a> {
         self.security = Some(security);
         self
     }
 
-    pub fn scopes(mut self, scopes: Array<&'a str>) -> FormBuilder<'a> {
+    pub fn scopes(mut self, scopes: Vec<&'a str>) -> FormBuilder<'a> {
         self.scopes = Some(scopes);
         self
     }
@@ -87,7 +86,7 @@ impl<'a> FormBuilder<'a> {
 
     pub fn additional_responses(
         mut self,
-        additional_responses: Array<AdditionalExpectedResponse<'a>>,
+        additional_responses: Vec<AdditionalExpectedResponse<'a>>,
     ) -> FormBuilder<'a> {
         self.additional_responses = Some(additional_responses);
         self
@@ -98,7 +97,7 @@ impl<'a> FormBuilder<'a> {
         self
     }
 
-    pub fn op(mut self, op: Array<OperationType>) -> FormBuilder<'a> {
+    pub fn op(mut self, op: Vec<OperationType>) -> FormBuilder<'a> {
         self.op = Some(op);
         self
     }

@@ -18,13 +18,10 @@ pub mod digest;
 pub mod oauth2;
 pub mod psk;
 
+use alloc::vec::Vec;
 use serde::{ser::SerializeMap, Serialize};
 
-use crate::{
-    constants::JSON_LD_TYPE,
-    data_structures::{Array, Map},
-    models::serialize_field,
-};
+use crate::{constants::JSON_LD_TYPE, data_structures::Map, models::serialize_field};
 
 use self::{
     ace::AceSecurityScheme, api_key::ApiKeySecurityScheme, basic::BasicSecurityScheme,
@@ -36,7 +33,7 @@ use self::{
 
 #[derive(Debug)]
 pub struct SecurityScheme<'a> {
-    pub json_ld_type: Option<Array<&'a str>>,
+    pub json_ld_type: Option<Vec<&'a str>>,
     pub description: Option<&'a str>,
     pub descriptions: Option<&'a Map<'a, &'a str>>,
     pub proxy: Option<&'a str>,
@@ -51,7 +48,7 @@ impl<'a> SecurityScheme<'a> {
 
 #[derive(Debug)]
 pub struct SecuritySchemeBuilder<'a> {
-    pub json_ld_type: Option<Array<&'a str>>,
+    pub json_ld_type: Option<Vec<&'a str>>,
     pub description: Option<&'a str>,
     pub descriptions: Option<&'a Map<'a, &'a str>>,
     pub proxy: Option<&'a str>,
@@ -69,7 +66,7 @@ impl<'a> SecuritySchemeBuilder<'a> {
         }
     }
 
-    pub fn json_ld_type(mut self, json_ld_type: Array<&'a str>) -> Self {
+    pub fn json_ld_type(mut self, json_ld_type: Vec<&'a str>) -> Self {
         self.json_ld_type = Some(json_ld_type);
         self
     }
@@ -164,13 +161,13 @@ impl<'a> Serialize for SecurityScheme<'a> {
                 serialize_field::<&str, S>(&security.authorization, "authorization", &mut map)?;
                 serialize_field::<&str, S>(&security.token, "token", &mut map)?;
                 serialize_field::<&str, S>(&security.refresh, "refresh", &mut map)?;
-                serialize_field::<Array<&str>, S>(&security.scopes, "scopes", &mut map)?;
+                serialize_field::<Vec<&str>, S>(&security.scopes, "scopes", &mut map)?;
             }
             SecuritySchemeType::Ace(security) => {
                 map.serialize_value("ace:ACESecurityScheme")?;
                 serialize_field::<&str, S>(&security.authorization_server, "ace:as", &mut map)?;
                 serialize_field::<&str, S>(&security.audience, "ace:audience", &mut map)?;
-                serialize_field::<Array<&str>, S>(&security.scopes, "ace:scopes", &mut map)?;
+                serialize_field::<Vec<&str>, S>(&security.scopes, "ace:scopes", &mut map)?;
                 serialize_field::<bool, S>(&security.cnonce, "ace:cnonce", &mut map)?;
             }
             SecuritySchemeType::Combo(security) => {
@@ -182,7 +179,7 @@ impl<'a> Serialize for SecurityScheme<'a> {
             }
         };
 
-        serialize_field::<Array<&str>, S>(&self.json_ld_type, JSON_LD_TYPE, &mut map)?;
+        serialize_field::<Vec<&str>, S>(&self.json_ld_type, JSON_LD_TYPE, &mut map)?;
         serialize_field::<&str, S>(&self.description, "description", &mut map)?;
         serialize_field::<&'a Map<&'a str>, S>(&self.descriptions, "descriptions", &mut map)?;
         serialize_field::<&str, S>(&self.proxy, "proxy", &mut map)?;

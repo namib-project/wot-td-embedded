@@ -9,14 +9,16 @@
  * SPDX-License-Identifier: MIT OR Apache-2.0
  */
 
+use alloc::vec::Vec;
+
 use super::DataSchema;
-use crate::data_structures::{Array, Map};
+use crate::data_structures::Map;
 use crate::models::serialize_field;
 
 #[derive(Debug)]
 pub struct ObjectSchema<'a> {
     pub properties: Option<Map<'a, &'a DataSchema<'a>>>,
-    pub required: Option<Array<&'a str>>,
+    pub required: Option<Vec<&'a str>>,
 }
 
 impl<'a> ObjectSchema<'a> {
@@ -25,7 +27,7 @@ impl<'a> ObjectSchema<'a> {
         S: serde::Serializer,
     {
         serialize_field::<Map<&'a DataSchema>, S>(&self.properties, "properties", &mut map)?;
-        serialize_field::<Array<&'a str>, S>(&self.required, "required", &mut map)?;
+        serialize_field::<Vec<&'a str>, S>(&self.required, "required", &mut map)?;
 
         Ok(map)
     }
